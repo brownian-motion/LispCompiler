@@ -2,7 +2,7 @@
 
 The language will be very simple to make it easy to implement. Currently it will implement the following functions:
  - Addition (+ a b c ...) - adds all variables a, b, c ...
- - Subtraction (- a b c ...) - subtracts the value of all variables after the first from the first variable. Equivalent to (+ a (- b c ...))
+ - Subtraction (- a b c ...) - subtracts the value of all variables after the first from the first variable. Equivalent to (- a (+ b c ...))
 
 # Formal Specification
 
