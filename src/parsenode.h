@@ -12,7 +12,7 @@ struct parsenode{
 	int type;
 	int numChildren;
 	struct parsenode* children; //an array of parsenode structs
-	struct token* tokenPtr;
+	token* tokenPtr;
 	int isValid;
 };
 
@@ -20,7 +20,7 @@ struct parsenode* parsenodeAlloc(int num){
 	return (struct parsenode*) malloc(num * sizeof(struct parsenode));
 }
 
-printParseNode(struct parsenode node){
+void printParseNode(struct parsenode node){
 	if(!node.isValid){
 		printf("{type:%d, INVALID}",node.type);
 		return;
@@ -42,8 +42,8 @@ printParseNode(struct parsenode node){
 	}
 }
 
-struct parsenode makeAtom(struct token t){
-	struct token * ptr = tokenAlloc(1);
+struct parsenode makeAtom(token t){
+	token * ptr = tokenAlloc(1);
 	*ptr = t;
 	struct parsenode out = {TYPE_ATOM, 0, NULL, ptr, 1};
 	return out;
