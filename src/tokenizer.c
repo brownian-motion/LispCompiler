@@ -1,27 +1,9 @@
 #pragma once
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <assert.h>
+
 #include "tokenizer.h"
-#define MAX_TOKEN_SIZE 100
-#define MEMORY_ALLOCATION_ERROR -2
-
-#define STATE_EMPTY 0
-#define STATE_LIST_START 1
-#define STATE_LIST_END 2
-#define STATE_NUMBER 3
-#define STATE_DIV 4
-#define STATE_COMMENT 5
-#define STATE_ADD 6
-#define STATE_SUBTRACT 7
-#define STATE_ID 8
-#define STATE_ERROR -1
-
-#define addToBuffer(c) (tokenBufferEnd < MAX_TOKEN_SIZE || c=='\0')?(tokenBuffer[tokenBufferEnd++] = c):0
 
 int main(int argc, char* argv[]){
-	if(argc == 0){
+	if(argc == 2 && (strcmp(argv[1],"-h") == 0 || strcmp(argv[1],"/?") == 0) ){
 		puts("Usage: tokenizer < inputfile.jlisp");
 		return 0;
 	}
