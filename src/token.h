@@ -14,6 +14,7 @@
 
 struct _token{
 	int type;
+	int lineNumber;
 	char * text;
 };
 
@@ -41,6 +42,12 @@ token fgetToken(FILE *file){
 
 token getToken(){
 	return fgetToken(stdin);
+	char* buffer = (char *) malloc(MAX_TOKEN_SIZE+1);
+	buffer[MAX_TOKEN_SIZE] = '\0';
+	int state, lineNumber;
+	scanf("%d %d %s\n",&state, &lineNumber, buffer);
+	struct token out = {state, lineNumber, buffer};
+	return out;
 }
 
 void printToken(token t){

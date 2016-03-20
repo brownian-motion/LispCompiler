@@ -22,4 +22,14 @@ Planned additions to the language:
 # File Types
 
  - .jlisp - source code
- - .jtokens - annotated list of tokens output by the tokenizer, each on their own line
+ - .jtoken - annotated list of tokens output by the tokenizer, each on their own line
+
+# Intermediate File Formats
+
+# .jtoken
+
+.jtoken files are produced by the tokenizer and read by the parser.
+Each token is on a separate line, which is broken up into three parts:
+ - An integer reflecting the type of the token (number, id, etc.)
+ - An integer reflecting which line of the source code this token is from
+ - A string which is the actual text of the token
