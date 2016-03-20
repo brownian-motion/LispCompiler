@@ -20,6 +20,7 @@ int main(int argc, char* argv[]){
 	char c;
 
 	int state = 0;
+	int lineNumber = 1;
 
 	while( (c = getchar()) != EOF){
 		//printf("STATE %d CHAR '%c'\n",state, c);
@@ -27,6 +28,9 @@ int main(int argc, char* argv[]){
 			case STATE_EMPTY:
 				assert(tokenBufferEnd == 0);
 				if(isspace(c)){
+					if(c == '\n'){
+						lineNumber++;
+					}
 					continue;
 				} else if(isdigit(c)){
 					state = STATE_NUMBER;
@@ -46,12 +50,12 @@ int main(int argc, char* argv[]){
 					addToBuffer(c);
 				} else if(isspace(c)){
 					addToBuffer('\0');
-					printToken(tokenBuffer,state);
+					printTokenData(state, lineNumber, tokenBuffer);
 					tokenBufferEnd = 0;
 					state = STATE_EMPTY;
 				} else if(c == '(' || c==')') {
 					addToBuffer('\0');
-					printToken(tokenBuffer,state);
+					printTokenData(state, lineNumber, tokenBuffer);
 					state = STATE_EMPTY;
 					ungetc(c,stdin);
 					tokenBufferEnd = 0;
@@ -66,7 +70,7 @@ int main(int argc, char* argv[]){
 			case STATE_ERROR:
 				if(isspace(c)){
 					addToBuffer('\0');
-					printToken(tokenBuffer,state);
+					printTokenData(state, lineNumber, tokenBuffer);
 					tokenBufferEnd = 0;
 					state = STATE_EMPTY;
 					fprintf(stderr,"Erroneous token encountered: %s\n",tokenBuffer);
@@ -76,7 +80,7 @@ int main(int argc, char* argv[]){
 				break;
 			case STATE_LIST_START:
 				addToBuffer('\0');
-				printToken(tokenBuffer,state);
+				printTokenData(state, lineNumber, tokenBuffer);
 				tokenBufferEnd = 0;
 				//set it up so that the next pass takes care of it
 				if(isspace(c)){
@@ -95,20 +99,20 @@ int main(int argc, char* argv[]){
 				break;
 			case STATE_LIST_END:
 				addToBuffer('\0');
-				printToken(tokenBuffer,state);
+				printTokenData(state, lineNumber, tokenBuffer);
 				state = STATE_EMPTY;
 				tokenBufferEnd = 0;
 				break;
 			case STATE_ID:
 				if(isspace(c)){
 					addToBuffer('\0');
-					printToken(tokenBuffer,state);
+					printTokenData(state, lineNumber, tokenBuffer);
 					state = STATE_EMPTY;
 				} else if(isalnum(c) || c=='_'){
 					addToBuffer(c);
 				} else if(c == '(' || c==')'){
 					addToBuffer('\0');
-					printToken(tokenBuffer, state);
+					printTokenData( state, lineNumber, tokenBuffer);
 					state = STATE_EMPTY;
 					ungetc(c,stdin);
 				} else {
@@ -117,13 +121,12 @@ int main(int argc, char* argv[]){
 				}
 				break;
 		}
+		if(c == '\n'){
+			lineNumber++;
+		}
 	}
 	if(state != STATE_EMPTY){
 		addToBuffer('\0');
-		printToken(tokenBuffer, state);
+		printTokenData( state, lineNumber, tokenBuffer);
 	}
-}
-
-void printToken(char * token, int state){
-	printf("%d %s\n", state, token);
 }
