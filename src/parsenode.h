@@ -20,18 +20,36 @@ struct parsenode* parsenodeAlloc(int num){
 	return (struct parsenode*) malloc(num * sizeof(struct parsenode));
 }
 
+char* getNameOfType(int type){
+	switch(type){
+		case TYPE_ATOM:
+			return "ATOM";
+		case TYPE_E:
+			return "E";
+		case TYPE_ES:
+			return "ES";
+		case TYPE_PROGRAM:
+			return "PROGRAM";
+		default:
+			return "UNKNOWN_TYPE";
+	}
+}
+
 void printParseNode(struct parsenode node){
+	printf("{type:%s(%d), ",getNameOfType(node.type),node.type);
 	if(!node.isValid){
-		printf("{type:%d, INVALID}",node.type);
+		printf("INVALID}");
 		return;
 	}
 	if(node.numChildren == 0){
-		printf("{type:%d, token:\"",node.type);
-		if(node.tokenPtr != NULL)
+		printf("token:\"");
+		if(node.tokenPtr == NULL)
+			printf("NULL_TOKEN");
+		else
 			printToken(*(node.tokenPtr));
 		printf("\"}");
 	} else {
-		printf("{type:%d, children: (",node.type);
+		printf("children: (");
 		for(int i = 0 ; i < node.numChildren; i++){
 			if(i != 0){
 				printf(", ");

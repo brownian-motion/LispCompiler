@@ -44,7 +44,7 @@ struct parsenode peek(struct parseStack* stack){
 }
 
 int stackSize(struct parseStackNode* node){
-	(node == NULL)?0:(1+stackSize(node->next));
+	return (node == NULL)?0:(1+stackSize(node->next));
 }
 
 int size(struct parseStack stack){

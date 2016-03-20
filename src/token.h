@@ -9,7 +9,7 @@
 #define TYPE_TOKEN_ID STATE_ID
 #define TYPE_TOKEN_PLUS STATE_ADD
 #define TYPE_TOKEN_MINUS STATE_SUBTRACT
-#define TYPE_TOKEN_EOF -1
+#define TYPE_TOKEN_EOF -4
 
 struct _token{
 	int type;
@@ -23,7 +23,7 @@ token * tokenAlloc(int numTokens){
 }
 
 token fgetToken(FILE *file){
-	if(feof(file)){
+	if(!feof(file)){
 		char* buffer = (char *) malloc(sizeof(char) * (MAX_TOKEN_SIZE+1));
 		buffer[MAX_TOKEN_SIZE] = '\0';
 		int state;
@@ -44,4 +44,8 @@ token getToken(){
 
 void printToken(token t){
 	printf(t.text);
+}
+
+void printTokenDebug(token t){
+	printf("{token type:%d, text:\"%s\"}",t.type, t.text);
 }

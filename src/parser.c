@@ -1,6 +1,8 @@
 #pragma once
 #include "parser.h"
 
+//#define DO_DEBUG_PARSE 1
+
 int main(int argc, char* argv []){
 	// struct parsenode lparen = makeAtom(getToken());
 	// struct parsenode one = makeEFromAtom(makeAtom(getToken()));
@@ -19,11 +21,27 @@ int main(int argc, char* argv []){
 
 struct parsenode buildProgram(FILE * file){
 	struct parseStack stack = makeParseStack();
-	token lookAhead = getToken();
+	token lookAhead = fgetToken(file);
+	int numIterations = 0;
 
 	while(isEmpty(stack) || peek(&stack).type != TYPE_PROGRAM){
+		#ifdef DO_DEBUG_STACK
+			printf("#%3d: ",numIterations++);
+			if(isEmpty(stack)){
+				printf("<EMPTY STACK>");
+			} else {
+				//print the top of the stack
+				printf("Stack size %3d. Top of stack: ",size(stack));
+				printParseNode(peek(&stack));
+			}
+			printf(" Look ahead: ");
+			printTokenDebug(lookAhead);
+		#endif
 		if(shouldReduce(stack, lookAhead)){
 			//then reduce
+			#ifdef DO_DEBUG_STACK
+				printf(" (reducing)\n");
+			#endif
 			switch(peek(&stack).type){
 				case TYPE_ATOM:
 					struct parsenode atom = pop(&stack);
@@ -57,8 +75,12 @@ struct parsenode buildProgram(FILE * file){
 			}
 		} else {
 			//then shift
+			#ifdef DO_DEBUG_STACK
+				printf(" (shifting)\n");
+			#endif
+			assert(lookAhead.type != TYPE_TOKEN_EOF);
 			push(&stack,makeAtom(lookAhead));
-			lookAhead = getToken();
+			lookAhead = fgetToken(file);
 		}
 	}
 
@@ -80,7 +102,7 @@ int shouldReduce(struct parseStack stack, token lookAhead){
 		case TYPE_E:
 			//If the upcoming token is a right parentheses, we need to reduce by putting an empty Es onto the stack and doing nothing else
 			//Otherwise, we need more tokens
-			return lookAhead.type == TYPE_TOKEN_RPAREN;
+			return lookAhead.type == TYPE_TOKEN_RPAREN || lookAhead.type == TYPE_TOKEN_EOF;
 		case TYPE_ES:
 			assert(lookAhead.type == TYPE_TOKEN_RPAREN);
 			//If the stack currently is ... atom(LPAREN) E Es, then we need to shift in order to get the right paren we need to reduce
