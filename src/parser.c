@@ -50,6 +50,12 @@ int buildParseTree(FILE * file, struct parsenode * output){
 			printTokenDebug(lookAhead);
 		#endif
 		int shouldReduceResult;
+		if(lookAhead.type == TYPE_TOKEN_ERROR){
+			#ifdef DO_PRINT_PARSE_ERRORS
+				printf("Parse error #%3d: Invalid token encountered.", PARSE_ERROR_INVALID_TOKEN);
+			#endif
+			return PARSE_ERROR_INVALID_TOKEN;
+		}
 		switch(shouldReduceResult = shouldReduce(stack, lookAhead)){
 			case 1:
 				//then reduce
