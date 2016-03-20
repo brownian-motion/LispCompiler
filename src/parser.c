@@ -2,6 +2,8 @@
 #include "parser.h"
 
 //#define DO_DEBUG_PARSE 1
+#define DO_PRINT_PARSE_ERRORS 1
+#define DO_PRINT_RESULT_PARSE_TREE 1
 
 int main(int argc, char* argv []){
 	// struct parsenode lparen = makeAtom(getToken());
@@ -14,12 +16,22 @@ int main(int argc, char* argv []){
 	// struct parsenode lastTwo = makeEsFromList(two, lastOne);
 	// struct parsenode list = makeEFromList(lparen, one, lastTwo, rparen);
 	// struct parsenode program = makeProgram(list);
-	struct parsenode program = buildProgram(stdin);
-	printParseNode(program);
-	return 0;
+	struct parsenode program;
+	if(buildParseTree(stdin, &program) == 0){
+		puts("Successful parsing!");
+		#ifdef DO_PRINT_RESULT_PARSE_TREE
+			printParseNode(program);
+		#endif
+		return 0;
+	}
 }
 
-struct parsenode buildProgram(FILE * file){
+/**
+ * Generates a parse tree of the given file, assumed to represent a valid .jtoken file.
+ * On success, returns 0 and places the generated PROGRAM parsenode into *output.
+ * On failure, returns an error code and does not modify *output.
+ */
+int buildParseTree(FILE * file, struct parsenode * output){
 	struct parseStack stack = makeParseStack();
 	token lookAhead = fgetToken(file);
 	int numIterations = 0;
@@ -37,54 +49,73 @@ struct parsenode buildProgram(FILE * file){
 			printf(" Look ahead: ");
 			printTokenDebug(lookAhead);
 		#endif
-		if(shouldReduce(stack, lookAhead)){
-			//then reduce
-			#ifdef DO_DEBUG_STACK
-				printf(" (reducing)\n");
-			#endif
-			switch(peek(&stack).type){
-				case TYPE_ATOM:
-					struct parsenode atom = pop(&stack);
-					if(atom.tokenPtr->type == TYPE_TOKEN_RPAREN){
+		int shouldReduceResult;
+		switch(shouldReduceResult = shouldReduce(stack, lookAhead)){
+			case 1:
+				//then reduce
+				#ifdef DO_DEBUG_STACK
+					printf(" (reducing)\n");
+				#endif
+				switch(peek(&stack).type){
+					case TYPE_ATOM:
+						struct parsenode atom = pop(&stack);
+						if(atom.tokenPtr->type == TYPE_TOKEN_RPAREN){
+							struct parsenode es = pop(&stack);
+							struct parsenode e = pop(&stack);
+							struct parsenode lparen = pop(&stack);
+							push(&stack, makeEFromList(lparen, e, es, atom));
+						} else {
+							push(&stack, makeEFromAtom(atom));
+						}
+						break;
+					case TYPE_ES:
+						//hit an rparen. Should make an ES from an E and ES
 						struct parsenode es = pop(&stack);
 						struct parsenode e = pop(&stack);
-						struct parsenode lparen = pop(&stack);
-						push(&stack, makeEFromList(lparen, e, es, atom));
-					} else {
-						push(&stack, makeEFromAtom(atom));
-					}
-					break;
-				case TYPE_ES:
-					//hit an rparen. Should make an ES from an E and ES
-					struct parsenode es = pop(&stack);
-					struct parsenode e = pop(&stack);
-					push(&stack, makeEsFromList(e, es));
-					break;
-				case TYPE_E:
-					//hit an rparen, and should make an empty ES,
-					//or hit end of file and should make program
-					if(lookAhead.type == TYPE_TOKEN_EOF)
-						push(&stack, makeProgram(pop(&stack)));
-					else
-						push(&stack, makeEmptyEs());
-					break;
-				case TYPE_PROGRAM:
-				default:
-					fputs("FATAL: Tried to reduce a program or an unkown parsenode.",stderr);
-					assert(0); //fatal error!
-			}
-		} else {
-			//then shift
-			#ifdef DO_DEBUG_STACK
-				printf(" (shifting)\n");
-			#endif
-			assert(lookAhead.type != TYPE_TOKEN_EOF);
-			push(&stack,makeAtom(lookAhead));
-			lookAhead = fgetToken(file);
+						push(&stack, makeEsFromList(e, es));
+						break;
+					case TYPE_E:
+						//hit an rparen, and should make an empty ES,
+						//or hit end of file and should make program
+						if(lookAhead.type == TYPE_TOKEN_EOF)
+							push(&stack, makeProgram(pop(&stack)));
+						else
+							push(&stack, makeEmptyEs());
+						break;
+						#ifdef DO_PRINT_PARSE_ERRORS
+							fprintf(stderr,"Parse error #%3d: Tried to reduce a program parse node.",PARSE_ERROR_PROGRAM_NODE_REDUCED);
+						#endif
+						return PARSE_ERROR_PROGRAM_NODE_REDUCED;
+					default:
+						#ifdef DO_PRINT_PARSE_ERRORS
+							fprintf(stderr,"Parse error#%3d: Tried to reduce a parse node of unknown type.",PARSE_ERROR_UNKNOWN_NODE_REDUCED);
+						#endif
+						return PARSE_ERROR_UNKNOWN_NODE_REDUCED;
+				}
+				break;
+			case 0:
+				//then shift
+				#ifdef DO_DEBUG_STACK
+					printf(" (shifting)\n");
+				#endif
+				if(lookAhead.type == TYPE_TOKEN_EOF){
+					return PARSE_ERROR_EARLY_EOF;
+				}
+				push(&stack,makeAtom(lookAhead));
+				lookAhead = fgetToken(file);
+				break;
+			default:
+				return PARSE_ERROR_SYNTAX_ERROR;
 		}
 	}
-
-	return pop(&stack);
+	if(size(stack) != 1){
+		#ifdef DO_PRINT_PARSE_ERRORS
+			fprintf(stderr,"Parse error#%3d: Source could not be reduced to a complete program.",PARSE_ERROR_NON_EMPTY_STACK);
+		#endif
+		return PARSE_ERROR_NON_EMPTY_STACK;
+	}
+	*output = pop(&stack);
+	return PARSE_SUCCESS;
 }
 
 /**
