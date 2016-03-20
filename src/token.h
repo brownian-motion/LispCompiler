@@ -11,6 +11,7 @@
 
 struct token{
 	int type;
+	int lineNumber;
 	char * text;
 };
 
@@ -21,9 +22,9 @@ struct token * tokenAlloc(int numTokens){
 struct token getToken(){
 	char* buffer = (char *) malloc(MAX_TOKEN_SIZE+1);
 	buffer[MAX_TOKEN_SIZE] = '\0';
-	int state;
-	scanf("%d %s\n",&state, buffer);
-	struct token out = {state, buffer};
+	int state, lineNumber;
+	scanf("%d %d %s\n",&state, &lineNumber, buffer);
+	struct token out = {state, lineNumber, buffer};
 	return out;
 }
 
