@@ -8,3 +8,4 @@
 #define STATE_SUBTRACT 7
 #define STATE_ID 8
 #define STATE_ERROR -1
+#define STATE_EOF -2

@@ -12,7 +12,7 @@ struct parsenode{
 	int type;
 	int numChildren;
 	struct parsenode* children; //an array of parsenode structs
-	struct token* tokenPtr;
+	token* tokenPtr;
 	int isValid;
 };
 
@@ -20,18 +20,36 @@ struct parsenode* parsenodeAlloc(int num){
 	return (struct parsenode*) malloc(num * sizeof(struct parsenode));
 }
 
-printParseNode(struct parsenode node){
+char* getNameOfType(int type){
+	switch(type){
+		case TYPE_ATOM:
+			return "ATOM";
+		case TYPE_E:
+			return "E";
+		case TYPE_ES:
+			return "ES";
+		case TYPE_PROGRAM:
+			return "PROGRAM";
+		default:
+			return "UNKNOWN_TYPE";
+	}
+}
+
+void printParseNode(struct parsenode node){
+	printf("{type:%s(%d), ",getNameOfType(node.type),node.type);
 	if(!node.isValid){
-		printf("{type:%d, INVALID}",node.type);
+		printf("INVALID}");
 		return;
 	}
 	if(node.numChildren == 0){
-		printf("{type:%d, token:\"",node.type);
-		if(node.tokenPtr != NULL)
+		printf("token:\"");
+		if(node.tokenPtr == NULL)
+			printf("NULL_TOKEN");
+		else
 			printToken(*(node.tokenPtr));
 		printf("\"}");
 	} else {
-		printf("{type:%d, children: (",node.type);
+		printf("children: (");
 		for(int i = 0 ; i < node.numChildren; i++){
 			if(i != 0){
 				printf(", ");
@@ -42,8 +60,8 @@ printParseNode(struct parsenode node){
 	}
 }
 
-struct parsenode makeAtom(struct token t){
-	struct token * ptr = tokenAlloc(1);
+struct parsenode makeAtom(token t){
+	token * ptr = tokenAlloc(1);
 	*ptr = t;
 	struct parsenode out = {TYPE_ATOM, 0, NULL, ptr, 1};
 	return out;
