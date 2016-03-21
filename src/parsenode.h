@@ -35,29 +35,33 @@ char* getNameOfType(int type){
 	}
 }
 
-void printParseNode(struct parsenode node){
-	printf("{type:%s(%d), ",getNameOfType(node.type),node.type);
+void fprintParseNode(FILE * file, struct parsenode node){
+	fprintf(file, "{type:%s(%d), ",getNameOfType(node.type),node.type);
 	if(!node.isValid){
-		printf("INVALID}");
+		fprintf(file, "INVALID}");
 		return;
 	}
 	if(node.numChildren == 0){
-		printf("token:\"");
+		fprintf(file, "token:\"");
 		if(node.tokenPtr == NULL)
-			printf("NULL_TOKEN");
+			fprintf(file, "NULL_TOKEN");
 		else
-			printToken(*(node.tokenPtr));
-		printf("\"}");
+			fprintTokenText(file,*(node.tokenPtr));
+		fprintf(file, "\"}");
 	} else {
-		printf("children: (");
+		fprintf(file, "children: (");
 		for(int i = 0 ; i < node.numChildren; i++){
 			if(i != 0){
-				printf(", ");
+				fprintf(file,", ");
 			}
-			printParseNode(node.children[i]);
+			fprintParseNode(file,node.children[i]);
 		}
-		printf(")}");
+		fprintf(file,")}");
 	}
+}
+
+void printParseNode(struct parsenode node){
+	fprintParseNode(stdout, node);
 }
 
 struct parsenode makeAtom(token t){
@@ -72,6 +76,10 @@ struct parsenode makeEmptyEs(){
 	return out;
 }
 
+int canMakeEFromAtom(struct parsenode atom){
+	return atom.isValid && (atom.tokenPtr->type == TYPE_TOKEN_NUMBER || atom.tokenPtr->type == TYPE_TOKEN_ID);
+}
+
 struct parsenode makeEFromAtom(struct parsenode atom){
 	int isValid = (atom.type == TYPE_ATOM) && atom.isValid;
 	struct parsenode* children = parsenodeAlloc(1);
@@ -80,12 +88,16 @@ struct parsenode makeEFromAtom(struct parsenode atom){
 	return out;
 }
 
-struct parsenode makeEFromList(struct parsenode lparen, struct parsenode e, struct parsenode es, struct parsenode rparen){
-	int isValid = (lparen.type == TYPE_ATOM && lparen.tokenPtr->type == TYPE_TOKEN_LPAREN)
+int canMakeEFromList(struct parsenode lparen, struct parsenode e, struct parsenode es, struct parsenode rparen){
+	return (lparen.type == TYPE_ATOM && lparen.tokenPtr->type == TYPE_TOKEN_LPAREN)
 		&& (e.type == TYPE_E)
 		&& (es.type == TYPE_ES)
 		&& (rparen.type == TYPE_ATOM && rparen.tokenPtr->type == TYPE_TOKEN_RPAREN)
 		&& lparen.isValid && e.isValid && es.isValid && rparen.isValid;
+}
+
+struct parsenode makeEFromList(struct parsenode lparen, struct parsenode e, struct parsenode es, struct parsenode rparen){
+	int isValid = canMakeEFromList(lparen,e,es,rparen);
 	struct parsenode* children = parsenodeAlloc(4);
 	children[0] = lparen;
 	children[1] = e;

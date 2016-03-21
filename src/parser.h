@@ -1,4 +1,4 @@
-#pragma 
+#pragma once
 #include "token.h"
 #include <stdio.h>
 #include <assert.h>
@@ -12,7 +12,6 @@
 #define PARSE_ERROR_NON_EMPTY_STACK -4
 #define PARSE_ERROR_UNKNOWN_NODE_REDUCED -5
 #define PARSE_ERROR_PROGRAM_NODE_REDUCED -6
-#define PARSE_ERROR_INVALID_TOKEN -7
 
 int buildParseTree(FILE *, struct parsenode *);
 int shouldReduce(struct parseStack, token);
