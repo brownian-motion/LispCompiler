@@ -23,33 +23,63 @@ typedef struct _token token;
 token * tokenAlloc(int numTokens){
 	return (token *) malloc(numTokens * sizeof(token));
 }
+/*
+token * makeToken(int state, int lineNumber, char* text){
+	token * out = tokenAlloc(1);
+	out -> state = state;
+	out -> lineNumber = lineNumber;
+	out -> text = (char * ) malloc(sizeof(char) * (strlen(text) + 1));
+	strcpy(out -> text, text);
+	return out;
+}
 
-token fgetToken(FILE *file){
+void freeToken(token * t){
+	free (t->text);
+	free (t);
+}
+*/
+
+/**
+ * Performs a shallow copy of the fields of the token pointed to by ptr
+ */
+void fillToken(token * ptr, int type, int lineNumber, char * text){
+	ptr -> type = type;
+	ptr -> lineNumber = lineNumber;
+	ptr -> text = text;
+}
+
+void fgetToken(FILE *file, token * container){
 	if(!feof(file)){
 		char* buffer = (char *) malloc(sizeof(char) * (MAX_TOKEN_SIZE+1));
 		buffer[MAX_TOKEN_SIZE] = '\0';
 		int state, lineNumber;
 		fscanf(file, "%d %d %s\n",&state, &lineNumber, buffer);
-		token out = {state, lineNumber, buffer};
-		return out;
+		fillToken(container, state, lineNumber, buffer);
 	} else {
 		char * buffer = (char*) malloc(sizeof(char));
 		buffer[0] = '\0';
-		token out = {TYPE_TOKEN_EOF, -1, buffer};
-		return out;
+		fillToken(container, TYPE_TOKEN_EOF, -1, buffer);
 	}
 }
 
-token getToken(){
-	return fgetToken(stdin);
+void getToken(token * container){
+	fgetToken(stdin, container);
+}
+
+void fprintToken(FILE* file, token t){
+	fprintf(file, "%d %d %s\n",t.type, t.lineNumber, t.text);
 }
 
 void printToken(token t){
-	printf("%d %d %s\n",t.type, t.lineNumber, t.text);
+	fprintToken(stdout, t);
+}
+
+void fprintTokenText(FILE * file, token t){
+	fprintf(file, "%s",t.text);
 }
 
 void printTokenText(token t){
-	printf("%s",t.text);
+	fprintTokenText(stdout, t);
 }
 
 void printTokenData(int state, int lineNumber, char * text){
@@ -58,5 +88,5 @@ void printTokenData(int state, int lineNumber, char * text){
 }
 
 void printTokenDebug(token t){
-	printf("{token type:%d, line: %d, text:\"%s\"}",t.type, t.lineNumber, t.text);
+	printf("{token type:%d, line:%d, text:\"%s\"}",t.type, t.lineNumber, t.text);
 }
