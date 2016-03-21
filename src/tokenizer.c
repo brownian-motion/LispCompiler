@@ -102,6 +102,19 @@ int main(int argc, char* argv[]){
 				printTokenData(state, lineNumber, tokenBuffer);
 				state = STATE_EMPTY;
 				tokenBufferEnd = 0;
+				if(isspace(c)){
+					state = STATE_EMPTY;
+					continue;
+				}else if(isalpha(c)){
+					state = STATE_ID;
+				} else if(isdigit(c)){
+					state = STATE_NUMBER;
+				} else if(c == '('){
+					state = STATE_LIST_START;
+				} else if( c == ')'){
+					state = STATE_LIST_END;
+				}
+				addToBuffer(c);
 				break;
 			case STATE_ID:
 				if(isspace(c)){
