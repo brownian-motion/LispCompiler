@@ -49,6 +49,7 @@ syntaxnode * makeSyntaxTreeLeafFromToken(token * t){
 	syntaxnode * out = emptySyntaxnodeAlloc();
 	out->atom = t;
 	out->carType = SYNTAX_CAR_TYPE_TOKEN;
+	return out;
 }
 
 /**
@@ -70,8 +71,9 @@ void fprintSyntaxnode(FILE * f, syntaxnode * n){
 			fprintToken(f, *(n->atom));
 			break;
 		case SYNTAX_CAR_TYPE_SYNTAX_NODE:
-			fprintf(f, "(");
 			fprintSyntaxnode(f, n->car);
+			fprintf(f, "(");
+			fprintSyntaxnode(f, n->cdr);
 			fprintf(f, ")");
 			break;
 	}

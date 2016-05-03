@@ -44,9 +44,9 @@ int generateSyntaxTree(struct parsenode * parseTree, syntaxnode * syntaxTree){
 		fprintf(stderr, "Program node doesn't have exactly 1 child.");
 		return -1;
 	}
-	struct parsenode e = parseTree->children[0];
-	syntaxnode * root = makeSyntaxnodeFromE(&e);
-	*syntaxTree = *root;
+	struct parsenode * e = &(parseTree->children[0]);
+	syntaxnode * root = makeSyntaxnodeFromE(e);
+	*syntaxTree = *root; //copy the data, not memory addresses
 	free(root); //because we copied the data into syntaxTree, we can free this memory space
 	return 0;
 }
@@ -87,7 +87,7 @@ syntaxnode * makeSyntaxnodeFromEs(struct parsenode * node){
 				return NULL;
 			}
 			syntaxnode* out = makeSyntaxnodeFromE(&e);
-			syntaxnode* cdr = makeSyntaxnodeFromEs(&es);
+			syntaxnode* cdr = makeSyntaxnodeFromEs(&es); //overwrites what was there?
 			if(out == NULL){
 				fprintf(stderr,"Error generating first child of an ES");
 			}
@@ -125,6 +125,7 @@ syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
 		case 2:
 			//This E is a list. Return a syntax node with ES->E as car and ES->ES as ES->E->cdr, and cdr as null
 		{ //limits lexical scope of enclosed variables
+			//TODO: fix the error in syntax regarding car and cdr
 			struct parsenode e = node->children[0];
 			struct parsenode es = node->children[1];
 			if(e.type != TYPE_E){
@@ -138,6 +139,7 @@ syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
 			syntaxnode* out = emptySyntaxnodeAlloc();
 			syntaxnode* car = makeSyntaxnodeFromE(&e);
 			syntaxnode* cdr = makeSyntaxnodeFromEs(&es);
+			out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
 			car->cdr = cdr;
 			out->car = car;
 			return out;
