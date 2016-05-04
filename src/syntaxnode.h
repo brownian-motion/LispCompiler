@@ -60,26 +60,27 @@ void fprintSyntaxnode(FILE * f, syntaxnode * n){
 		fprintf(f,"nil");
 		return;
 	}
+	// fprintf(f,"%d:",n);
 
-	//print car
 	switch(n->carType){
 		case SYNTAX_CAR_TYPE_EMPTY:
 			//do nothing, assume end of list
 			fprintf(f,"nil");
 			return;
 		case SYNTAX_CAR_TYPE_TOKEN:
-			fprintToken(f, *(n->atom));
+			fprintTokenText(f, *(n->atom));
+			fprintf(f,"\n");
 			break;
 		case SYNTAX_CAR_TYPE_SYNTAX_NODE:
+			//print car
+			fprintf(f,"(");
 			fprintSyntaxnode(f, n->car);
-			fprintf(f, "(");
-			fprintSyntaxnode(f, n->cdr);
-			fprintf(f, ")");
+			//print cdr
+			if(n->cdr != NULL){
+				fprintSyntaxnode(f, n->cdr);
+			}
+			fprintf(f,")");
 			break;
-	}
-	//print cdr
-	if(n->cdr != NULL){
-		fprintSyntaxnode(f, n->cdr);
 	}
 }
 

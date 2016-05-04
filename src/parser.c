@@ -1,7 +1,7 @@
 #pragma once
 #include "parser.h"
 
-#define DO_DEBUG_STACK 1
+#define DO_DEBUG_STACK 0
 #define DO_PRINT_PARSE_ERRORS 1
 #define DO_PRINT_RESULT_PARSE_TREE 1
 
