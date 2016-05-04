@@ -98,12 +98,17 @@ int canMakeEFromList(struct parsenode lparen, struct parsenode e, struct parseno
 
 struct parsenode makeEFromList(struct parsenode lparen, struct parsenode e, struct parsenode es, struct parsenode rparen){
 	int isValid = canMakeEFromList(lparen,e,es,rparen);
-	struct parsenode* children = parsenodeAlloc(4);
+	/*struct parsenode* children = parsenodeAlloc(4);
 	children[0] = lparen;
 	children[1] = e;
 	children[2] = es;
 	children[3] = rparen;
 	struct parsenode out = {TYPE_E, 4, children, NULL, isValid};
+	*/
+	struct parsenode* children = parsenodeAlloc(2);
+	children[0] = e;
+	children[1] = es;
+	struct parsenode out = {TYPE_E, 2, children, NULL, isValid};
 	return out;
 }
 

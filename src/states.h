@@ -1,3 +1,5 @@
+#pragma once
+
 #define STATE_EMPTY 0
 #define STATE_LIST_START 1
 #define STATE_LIST_END 2
