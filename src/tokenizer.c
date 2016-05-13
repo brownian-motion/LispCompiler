@@ -2,6 +2,8 @@
 
 #include "tokenizer.h"
 
+//TODO: make buffer a struct that can be manipulated in a local rather than global way
+
 int main(int argc, char* argv[]){
 	if(argc == 2 && (strcmp(argv[1],"-h") == 0 || strcmp(argv[1],"/?") == 0) ){
 		puts("Usage: tokenizer < inputfile.jlisp");
@@ -21,34 +23,37 @@ int main(int argc, char* argv[]){
 
 	int state = 0;
 	int lineNumber = 1;
+	int colNumber = 0; //will increment to 1 on the first read
 
 	while( (c = getchar()) != EOF){
+		colNumber++;
 		//printf("STATE %d CHAR '%c'\n",state, c);
 		switch(state){
 			case STATE_EMPTY:
 				assert(tokenBufferEnd == 0);
-				if(isspace(c)){
+				if(is_whitespace(c)){
 					if(c == '\n'){
 						lineNumber++;
+						colNumber = 0; //will increment to 1 on the next read
 					}
 					continue;
-				} else if(isdigit(c)){
+				} else if(is_digit(c)){
 					state = STATE_NUMBER;
-				} else if(c == '('){
+				} else if(c == '('){ // TODO: change to general brace token state
 					state = STATE_LIST_START;
 				} else if(c == ')'){
 					state = STATE_LIST_END;
-				} else if(isalpha(c)){
-					state = STATE_ID;
+				} else if(is_id_start(c)){
+					state = STATE_ID; // TODO: add operator state
 				} else {
 					state = STATE_ERROR;
 				}
 				addToBuffer(c);
 				break;
 			case STATE_NUMBER:
-				if(isdigit(c)){
+				if(is_digit(c)){
 					addToBuffer(c);
-				} else if(isspace(c)){
+				} else if(is_whitespace(c)){
 					addToBuffer('\0');
 					printTokenData(state, lineNumber, tokenBuffer);
 					tokenBufferEnd = 0;
@@ -83,14 +88,14 @@ int main(int argc, char* argv[]){
 				printTokenData(state, lineNumber, tokenBuffer);
 				tokenBufferEnd = 0;
 				//set it up so that the next pass takes care of it
-				if(isspace(c)){
+				if(is_whitespace(c)){
 					state = STATE_EMPTY;
 					continue;
-				}else if(isalpha(c)){
+				}else if(is_id_start(c)){
 					state = STATE_ID;
-				} else if(isdigit(c)){
+				} else if(is_digit(c)){
 					state = STATE_NUMBER;
-				} else if(c == '('){
+				} else if(c == '('){ //TODO: change to general brace state
 					state = STATE_LIST_START;
 				} else if( c == ')'){
 					state = STATE_LIST_END;
@@ -102,12 +107,12 @@ int main(int argc, char* argv[]){
 				printTokenData(state, lineNumber, tokenBuffer);
 				state = STATE_EMPTY;
 				tokenBufferEnd = 0;
-				if(isspace(c)){
+				if(is_whitespace(c)){
 					state = STATE_EMPTY;
 					continue;
-				}else if(isalpha(c)){
+				}else if(is_id_start(c)){
 					state = STATE_ID;
-				} else if(isdigit(c)){
+				} else if(is_digit(c)){
 					state = STATE_NUMBER;
 				} else if(c == '('){
 					state = STATE_LIST_START;
@@ -117,13 +122,13 @@ int main(int argc, char* argv[]){
 				addToBuffer(c);
 				break;
 			case STATE_ID:
-				if(isspace(c)){
+				if(is_whitespace(c)){
 					addToBuffer('\0');
 					printTokenData(state, lineNumber, tokenBuffer);
 					state = STATE_EMPTY;
-				} else if(isalnum(c) || c=='_'){
+				} else if(is_id(c)){
 					addToBuffer(c);
-				} else if(c == '(' || c==')'){
+				} else if(c == '(' || c==')'){ //TODO: add general brace state here
 					addToBuffer('\0');
 					printTokenData( state, lineNumber, tokenBuffer);
 					state = STATE_EMPTY;
