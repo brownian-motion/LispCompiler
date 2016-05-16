@@ -24,19 +24,22 @@ int main(int argc, char* argv[]){
 	int state = 0;
 	int lineNumber = 1;
 	int colNumber = 0; //will increment to 1 on the first read
+	int colNumberAtStartOfToken = 0;
 
-	while( (c = getchar()) != EOF){
-		colNumber++;
+	while( (c = peekChar()) != EOF){
 		//printf("STATE %d CHAR '%c'\n",state, c);
 		switch(state){
 			case STATE_EMPTY:
 				assert(tokenBufferEnd == 0);
 				if(is_whitespace(c)){
+					consumeChar(); //consume this one whitespace character
 					if(c == '\n'){
 						lineNumber++;
 						colNumber = 0; //will increment to 1 on the next read
+					} else {
+						colNumber++;
 					}
-					continue;
+					continue; // don't add to the buffer
 				} else if(is_digit(c)){
 					state = STATE_NUMBER;
 				} else if(c == '('){ // TODO: change to general brace token state
@@ -45,106 +48,102 @@ int main(int argc, char* argv[]){
 					state = STATE_LIST_END;
 				} else if(is_id_start(c)){
 					state = STATE_ID; // TODO: add operator state
+				} else if(c == ';'){
+					state = STATE_COMMENT;
+					continue; //avoid adding to the buffer
 				} else {
 					state = STATE_ERROR;
 				}
-				addToBuffer(c);
+				addToTokenBuffer(c);
+				colNumber++;
+				colNumberAtStartOfToken = colNumber; //save this so that we can print the correct spot later
+				consumeChar();
 				break;
 			case STATE_NUMBER:
 				if(is_digit(c)){
-					addToBuffer(c);
-				} else if(is_whitespace(c)){
-					addToBuffer('\0');
-					printTokenData(state, lineNumber, tokenBuffer);
-					tokenBufferEnd = 0;
-					state = STATE_EMPTY;
-				} else if(c == '(' || c==')') {
-					addToBuffer('\0');
-					printTokenData(state, lineNumber, tokenBuffer);
-					state = STATE_EMPTY;
-					ungetc(c,stdin);
-					tokenBufferEnd = 0;
+					addToTokenBuffer(c);
+					consumeChar();
+					colNumber++;
 				} else {
-					state = STATE_ERROR;
-					addToBuffer(c);
+					addToTokenBuffer('\0');
+					printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
+					tokenBufferEnd = 0;
+					state = STATE_EMPTY;
 				}
 				break;
 			default:
 				fputs("Encountered an undefined state. Interpreting as an erroneous token.",stderr);
-				state = STATE_ERROR;
+				state = STATE_ERROR; //fallthrough to STATE_ERROR because we encountered an error
 			case STATE_ERROR:
-				if(isspace(c)){
-					addToBuffer('\0');
-					printTokenData(state, lineNumber, tokenBuffer);
+				if(is_whitespace(c)){
+					addToTokenBuffer('\0');
+					printTokenData(state, lineNumber, colNumber, tokenBuffer); //choose colNumber to report the precise spot where the error happened
 					tokenBufferEnd = 0;
 					state = STATE_EMPTY;
 					fprintf(stderr,"Erroneous token encountered: %s\n",tokenBuffer);
 				} else {
-					addToBuffer(c);
+					addToTokenBuffer(c);
+					consumeChar();
+					colNumber++;
 				}
 				break;
 			case STATE_LIST_START:
-				addToBuffer('\0');
-				printTokenData(state, lineNumber, tokenBuffer);
+				//Expected to only be one char.
+				//This char would have already been added by the empty state,
+				//so just end the token here.
+				addToTokenBuffer('\0');
+				printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
 				tokenBufferEnd = 0;
-				//set it up so that the next pass takes care of it
-				if(is_whitespace(c)){
-					state = STATE_EMPTY;
-					continue;
-				}else if(is_id_start(c)){
-					state = STATE_ID;
-				} else if(is_digit(c)){
-					state = STATE_NUMBER;
-				} else if(c == '('){ //TODO: change to general brace state
-					state = STATE_LIST_START;
-				} else if( c == ')'){
-					state = STATE_LIST_END;
-				}
-				addToBuffer(c);
+				state = STATE_EMPTY;
+				//let the next pass takes care of it
 				break;
 			case STATE_LIST_END:
-				addToBuffer('\0');
-				printTokenData(state, lineNumber, tokenBuffer);
-				state = STATE_EMPTY;
+				addToTokenBuffer('\0');
+				printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
 				tokenBufferEnd = 0;
-				if(is_whitespace(c)){
-					state = STATE_EMPTY;
-					continue;
-				}else if(is_id_start(c)){
-					state = STATE_ID;
-				} else if(is_digit(c)){
-					state = STATE_NUMBER;
-				} else if(c == '('){
-					state = STATE_LIST_START;
-				} else if( c == ')'){
-					state = STATE_LIST_END;
-				}
-				addToBuffer(c);
+				state = STATE_EMPTY;
 				break;
 			case STATE_ID:
-				if(is_whitespace(c)){
-					addToBuffer('\0');
-					printTokenData(state, lineNumber, tokenBuffer);
-					state = STATE_EMPTY;
-				} else if(is_id(c)){
-					addToBuffer(c);
-				} else if(c == '(' || c==')'){ //TODO: add general brace state here
-					addToBuffer('\0');
-					printTokenData( state, lineNumber, tokenBuffer);
-					state = STATE_EMPTY;
-					ungetc(c,stdin);
+				if(is_id(c)){
+					addToTokenBuffer(c);
+					consumeChar(); //don't nest this call, because c is already equal to the value this would return
 				} else {
-					addToBuffer(c);
-					state = STATE_ERROR;
+					addToTokenBuffer('\0');
+					printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
+					state = STATE_EMPTY;
+					//don't consume the buffered char, though, to let the empty state handle it
+				}
+				break;
+			case STATE_COMMENT:
+				if(c == '\n'){
+					state = STATE_EMPTY;
+				} else { //only consume up UNTIL the newline, and let the empty state handle the wraparound
+					consumeChar();	
 				}
 				break;
 		}
-		if(c == '\n'){
-			lineNumber++;
-		}
 	}
-	if(state != STATE_EMPTY){
-		addToBuffer('\0');
-		printTokenData( state, lineNumber, tokenBuffer);
+	//Handle the final token when EOF is encountered
+	if(state != STATE_EMPTY && state != STATE_COMMENT){
+		addToTokenBuffer('\0');
+		printTokenData( state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
 	}
+}
+
+char fPeekChar(FILE* f){
+	char out = fgetc(f);
+	ungetc(out,f);
+	return out;
+}
+
+char fConsumeChar(FILE* f){
+	return fgetc(f);
+}
+
+char peekChar(){
+	return fPeekChar(stdin);
+}
+
+char consumeChar(){
+	return fConsumeChar(stdin);
 }
