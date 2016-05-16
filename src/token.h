@@ -15,6 +15,7 @@
 struct _token{
 	int type;
 	int lineNumber;
+	int colNumber;
 	char * text;
 };
 
@@ -42,9 +43,10 @@ void freeToken(token * t){
 /**
  * Performs a shallow copy of the fields of the token pointed to by ptr
  */
-void fillToken(token * ptr, int type, int lineNumber, char * text){
+void fillToken(token * ptr, int type, int lineNumber, int colNumber, char * text){
 	ptr -> type = type;
 	ptr -> lineNumber = lineNumber;
+	ptr -> colNumber = colNumber;
 	ptr -> text = text;
 }
 
@@ -52,13 +54,13 @@ void fgetToken(FILE *file, token * container){
 	if(!feof(file)){
 		char* buffer = (char *) malloc(sizeof(char) * (MAX_TOKEN_SIZE+1));
 		buffer[MAX_TOKEN_SIZE] = '\0';
-		int state, lineNumber;
-		fscanf(file, "%d %d %s\n",&state, &lineNumber, buffer);
-		fillToken(container, state, lineNumber, buffer);
-	} else {
+		int state, lineNumber, colNumber;
+		fscanf(file, "%d %d %d %s\n",&state, &lineNumber, &colNumber, buffer);
+		fillToken(container, state, lineNumber, colNumber, buffer);
+	} else { //EOF encountered
 		char * buffer = (char*) malloc(sizeof(char));
 		buffer[0] = '\0';
-		fillToken(container, TYPE_TOKEN_EOF, -1, buffer);
+		fillToken(container, TYPE_TOKEN_EOF, -1, -1, buffer);
 	}
 }
 
@@ -67,7 +69,7 @@ void getToken(token * container){
 }
 
 void fprintToken(FILE* file, token t){
-	fprintf(file, "%d %d %s\n",t.type, t.lineNumber, t.text);
+	fprintf(file, "%d %d %d %s\n",t.type, t.lineNumber, t.colNumber, t.text);
 }
 
 void printToken(token t){
@@ -82,11 +84,11 @@ void printTokenText(token t){
 	fprintTokenText(stdout, t);
 }
 
-void printTokenData(int state, int lineNumber, char * text){
-	token t = {state, lineNumber, text};
+void printTokenData(int state, int lineNumber, int colNumber, char * text){
+	token t = {state, lineNumber, colNumber, text};
 	printToken(t);
 }
 
 void printTokenDebug(token t){
-	printf("{token type:%d, line:%d, text:\"%s\"}",t.type, t.lineNumber, t.text);
+	printf("{token type:%d, line:%d, col:%d, text:\"%s\"}",t.type, t.lineNumber, t.colNumber, t.text);
 }

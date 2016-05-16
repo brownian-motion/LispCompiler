@@ -36,7 +36,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 		int shouldReduceResult;
 		if(lookAhead.type == TYPE_TOKEN_ERROR){
 			#ifdef DO_PRINT_PARSE_ERRORS
-				printf("Parse error #%3d: Line #%3d: Invalid token encountered: \"%s\".\n", PARSE_ERROR_INVALID_TOKEN, lookAhead.lineNumber, lookAhead.text);
+				printf("Parse error #%3d: Line #%3d, Col %3d: Invalid token encountered: \"%s\".\n", PARSE_ERROR_INVALID_TOKEN, lookAhead.lineNumber, lookAhead.colNumber, lookAhead.text);
 			#endif
 			return PARSE_ERROR_INVALID_TOKEN;
 		}
@@ -57,7 +57,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 								push(&stack, makeEFromList(lparen, e, es, atom));
 							else{
 								#ifdef DO_PRINT_PARSE_ERRORS
-									fprintf(stderr, "Parse error #%3d: Line %3d: Syntax error. Cannot reduce series into list: ",PARSE_ERROR_SYNTAX_ERROR,atom.tokenPtr->lineNumber);
+									fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Syntax error. Cannot reduce series into list: ",PARSE_ERROR_SYNTAX_ERROR,atom.tokenPtr->lineNumber, atom.tokenPtr->colNumber);
 									fprintParseNode(stderr, lparen);
 									fprintParseNode(stderr, e);
 									fprintParseNode(stderr, es);
@@ -70,7 +70,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 							push(&stack, makeEFromAtom(atom));
 						} else {
 							#ifdef DO_PRINT_PARSE_ERRORS
-								fprintf(stderr, "Parse error #%3d: Line %3d: Unexpected token %s.\n",PARSE_ERROR_SYNTAX_ERROR,atom.tokenPtr->lineNumber,atom.tokenPtr->text);
+								fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Unexpected token %s.\n", PARSE_ERROR_SYNTAX_ERROR, atom.tokenPtr->lineNumber, atom.tokenPtr->colNumber, atom.tokenPtr->text);
 							#endif
 							return PARSE_ERROR_SYNTAX_ERROR;
 						} 
@@ -90,14 +90,14 @@ int buildParseTree(FILE * file, struct parsenode * output){
 							push(&stack, makeEmptyEs());
 						break;
 						#ifdef DO_PRINT_PARSE_ERRORS
-							fprintf(stderr,"Parse error #%3d: Line %3d: Tried to reduce a program parse node: ",PARSE_ERROR_PROGRAM_NODE_REDUCED, lookAhead.lineNumber);
+							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a program parse node: ",PARSE_ERROR_PROGRAM_NODE_REDUCED, lookAhead.lineNumber, lookAhead.colNumber);
 							fprintParseNode(stderr,peek(&stack));
 							fprintf(stderr,"\n");
 						#endif
 						return PARSE_ERROR_PROGRAM_NODE_REDUCED;
 					default:
 						#ifdef DO_PRINT_PARSE_ERRORS
-							fprintf(stderr,"Parse error #%3d: Line %3d: Tried to reduce a parse node of unknown type: ",PARSE_ERROR_UNKNOWN_NODE_REDUCED, lookAhead.lineNumber);
+							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a parse node of unknown type: ",PARSE_ERROR_UNKNOWN_NODE_REDUCED, lookAhead.lineNumber, lookAhead.colNumber);
 							fprintParseNode(stderr, peek(&stack));
 							fprintf(stderr,"\n");
 						#endif
@@ -120,7 +120,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 				break;
 			default:
 				#ifdef DO_PRINT_PARSE_ERRORS
-					fprintf(stderr, "Parse error #%3d: Line %3d: Syntax error :\"%s\"\n.",PARSE_ERROR_SYNTAX_ERROR, lookAhead.lineNumber, lookAhead.text);
+					fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Syntax error :\"%s\"\n.",PARSE_ERROR_SYNTAX_ERROR, lookAhead.lineNumber, lookAhead.colNumber, lookAhead.text);
 				#endif
 				return PARSE_ERROR_SYNTAX_ERROR;
 		}
