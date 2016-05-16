@@ -7,7 +7,7 @@
 #include "token.h"
 #define MEMORY_ALLOCATION_ERROR -2
 
-#define addToBuffer(c) (tokenBufferEnd < MAX_TOKEN_SIZE || c=='\0')?(tokenBuffer[tokenBufferEnd++] = c):0
+#define addToTokenBuffer(c) (tokenBufferEnd < MAX_TOKEN_SIZE || c=='\0')?(tokenBuffer[tokenBufferEnd++] = c):0
 
 int is_id_start(char c){
 	return isalpha(c) || (c == '_');
@@ -43,3 +43,10 @@ int is_op_char(char c){
 int is_brace(char c){
 	return c=='(' || c==')' || c=='{' || c=='}' || c=='[' || c==']';
 }
+
+char fPeekChar(FILE*);
+char fConsumeChar(FILE*);
+
+//Reads from stdin
+char peekChar();
+char consumeChar();
