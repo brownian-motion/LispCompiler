@@ -23,6 +23,9 @@
  * including both subtrees and atoms.
  * Whether this node is an atom or a subtree, and what sort of atom it is,
  * is determined by its carType.
+ *
+ * TODO: bundle the car and cdr together, since only non-atoms have a cdr
+ *       and everything except SYNTAX_CAR_TYPE_SYNTAX_NODE is an atom.
  */
 struct _syntaxnode {
 	union {
@@ -123,14 +126,15 @@ fprintSyntaxnodeAtom(FILE * f, syntaxnode * n){
 
 /**
  * Prints out a textual representation of the syntax subtree n to the FILE f
+ *
+ * TODO: add support for quoting
+ * TODO: make it not print nil at the ends of sublists when quoting
  */
 void fprintSyntaxnode(FILE * f, syntaxnode * n){
 	if(n == NULL){
 		fprintf(f,"nil");
 		return;
 	}
-
-	//print car
 
 	if(isEmptySyntaxNode(n)){ //nil
 		//do nothing, assume end of list
@@ -139,17 +143,21 @@ void fprintSyntaxnode(FILE * f, syntaxnode * n){
 		//just print its value
 		fprintSyntaxnodeAtom(f,n);
 	} else if(n->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE){
-		fprintf(f,"(");
+		//print car
+		if(!isSyntaxNodeAnAtom(n->car))
+			fprintf(f,"(");
 		fprintSyntaxnode(f, n->car);
-		fprintf(f,")");
+		if(!isSyntaxNodeAnAtom(n->car))
+			fprintf(f,")");
 		//print cdr
 		if(n->cdr != NULL){
+			fprintf(f," "); /** delimit by spaces, just like the source code of the language,
+							 *  so that quoted trees end up on one line. */
 			fprintSyntaxnode(f, n->cdr);
 		}
 	} else {
 		fprintf(stderr, "%s\n", "Encountered syntaxnode non-atom of unexpected type. Printing <Unexpected non-atom type>");
 		fprintf(f,"%s\n","<Unexpected non-atom type>");
-		break;
 	}
 }
 
