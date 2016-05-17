@@ -1,6 +1,6 @@
 # Language Overview
 
-The language will be very simple to make it easy to implement. Currently it will implement the following functions:
+The language will be very simple to make it easy to implement. Currently it will implement the following operations:
  - Addition (+ a b c ...) - adds all variables a, b, c ...
  - Subtraction (- a b c ...) - subtracts the value of all variables after the first from the first variable. Equivalent to (- a (+ b c ...))
 
@@ -14,10 +14,16 @@ The following products define the language:
  - *Es* -> *E* *Es*
  - *Es* -> ϵ
 
-Planned additions to the language:
- - *E* -> ( *Function* *Es* )
- - *Function* -> +
- - *Function* -> -
+Planned additions to the language include:
+ - Basic predefined arithmatic operators (`+` and `-`)
+ - Macros and primitives (macros written in C)
+
+Comments can be added with a semicolon `;`, like so:
+
+    (+ 1 2 3)    ;should evaluate to 6
+
+Comments are not considered tokens, and as such will only appear in source code.
+
 
 # File Types
 
