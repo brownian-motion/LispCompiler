@@ -105,7 +105,7 @@ token * getNextToken(tokenizer * t){
 		t->tokenBufferEnd = 0;
 		return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
 	} else {
-		return NULL;
+		return allocAndInitializeToken(TYPE_TOKEN_EOF,-1,-1,"EOF");
 	}
 }
 

@@ -66,7 +66,7 @@ int hasNextToken(tokenizer * t);
  * Reads the next token from the tokenizer's FILE* buffer,
  * allocates a block of memory to hold it using malloc(),
  * and returns a pointer to it.
- * If there are no more tokens, or there was an error allocating a token, returns NULL.
+ * If there are no more tokens, or there was an error allocating a token, returns a tokenizer representing EOF.
  */
 token * getNextToken(tokenizer * t);
 

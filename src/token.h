@@ -22,6 +22,29 @@ struct _token{
 
 typedef struct _token token;
 
+char * getTokenTypeName(int type){
+	switch(type){
+		case TYPE_TOKEN_LPAREN:
+			return "<LParen>";
+		case TYPE_TOKEN_RPAREN:
+			return "<RParen>";
+		case TYPE_TOKEN_NUMBER:
+			return "<Number>";
+		case TYPE_TOKEN_ID:
+			return "<ID>";
+		case TYPE_TOKEN_PLUS:
+			return "<Plus>";
+		case TYPE_TOKEN_MINUS:
+			return "<Minus>";
+		case TYPE_TOKEN_EOF:
+			return "<EOF>";
+		case TYPE_TOKEN_ERROR:
+			return "<Error!>";
+		default:
+			return "<Unknown token type!>";
+	}
+}
+
 token * tokenAlloc(int numTokens){
 	return (token *) malloc(numTokens * sizeof(token));
 }
@@ -89,8 +112,11 @@ void printTokenData(int state, int lineNumber, int colNumber, char * text){
 	printToken(t);
 }
 
-void printTokenDebug(token t){
-	printf("{token type:%d, line:%d, col:%d, text:\"%s\"}",t.type, t.lineNumber, t.colNumber, t.text);
+void printTokenDebug(token * t){
+	if(t == NULL)
+		printf("NULL_TOKEN");
+	else
+		printf("{token type:%s, line:%d, col:%d, text:\"%s\"}",getTokenTypeName(t->type), t->lineNumber, t->colNumber, t->text);
 }
 
 int is_id_start(char c){
