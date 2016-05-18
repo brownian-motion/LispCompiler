@@ -3,33 +3,6 @@
 
 #define DO_PRINT_RESULT_SYNTAX_TREE 1
 
-int main(int argc, char* argv[]){
-	int errorcode = 0;
-	//First, parse tokens from stdin
-	struct parsenode program;
-	if((errorcode = buildParseTree(stdin, &program)) != 0){
-		puts("Error while parsing.");
-		return errorcode;
-	}
-	puts("Successful parsing!");
-	#ifdef DO_PRINT_RESULT_PARSE_TREE
-		printParseNode(program);
-	#endif
-
-	//Second, generate a syntax tree from the given parse tree
-	syntaxnode syntaxtree;
-	if((errorcode = generateSyntaxTree(&program, &syntaxtree)) != 0){
-		puts("Error while generating syntax tree.");
-		return errorcode;
-	}
-	puts("\nSuccessful syntax tree generation!");
-	#ifdef DO_PRINT_RESULT_SYNTAX_TREE 
-		printSyntaxnode(&syntaxtree); 
-	#endif
-
-	return errorcode;
-}
-
 int generateSyntaxTree(struct parsenode * parseTree, syntaxnode * syntaxTree){
 	if(parseTree == NULL){
 		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
@@ -38,7 +11,7 @@ int generateSyntaxTree(struct parsenode * parseTree, syntaxnode * syntaxTree){
 		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
 		return -3;
 	} else if(parseTree->type != TYPE_PROGRAM){
-		fprintf(stderr, "Expected an PROGRAM but encountered %s.", getNameOfType(parseTree->type));
+		fprintf(stderr, "Expected an PROGRAM but encountered %s.", getNameOfParseNodeType(parseTree->type));
 		return -2;
 	} else if(parseTree->numChildren != 1){
 		fprintf(stderr, "Program node doesn't have exactly 1 child.");
@@ -66,7 +39,7 @@ syntaxnode * makeSyntaxnodeFromEs(struct parsenode * node){
 		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
 		return NULL;
 	} else if(node->type != TYPE_ES){
-		fprintf(stderr, "Expected an ES but encountered %s.", getNameOfType(node->type));
+		fprintf(stderr, "Expected an ES but encountered %s.", getNameOfParseNodeType(node->type));
 		return NULL;
 	}
 	switch(node->numChildren){
@@ -79,11 +52,11 @@ syntaxnode * makeSyntaxnodeFromEs(struct parsenode * node){
 			struct parsenode e = node->children[0];
 			struct parsenode es = node->children[1];
 			if(e.type != TYPE_E){
-				fprintf(stderr, "Expected an E but encountered %s.", getNameOfType(node->type));
+				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
 			if(es.type != TYPE_ES){
-				fprintf(stderr, "Expected an E but encountered %s.", getNameOfType(node->type));
+				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
 			syntaxnode* out = emptySyntaxnodeAlloc();
@@ -111,7 +84,7 @@ syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
 		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
 		return NULL;
 	} else if(node->type != TYPE_E){
-		fprintf(stderr, "Expected an E but encountered %s.", getNameOfType(node->type));
+		fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 		return NULL;
 	}
 	switch(node->numChildren){
@@ -120,7 +93,7 @@ syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
 		{
 			struct parsenode atom = node->children[0];
 			if(atom.type != TYPE_ATOM){
-				fprintf(stderr, "Expected an atom but encountered %s.", getNameOfType(atom.type));
+				fprintf(stderr, "Expected an atom but encountered %s.", getNameOfParseNodeType(atom.type));
 				return NULL;
 			}
 			return makeSyntaxnodeFromAtom(&atom);
@@ -131,11 +104,11 @@ syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
 			struct parsenode e = node->children[0];
 			struct parsenode es = node->children[1];
 			if(e.type != TYPE_E){
-				fprintf(stderr, "Expected an E but encountered %s.", getNameOfType(node->type));
+				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
 			if(es.type != TYPE_ES){
-				fprintf(stderr, "Expected an ES but encountered %s.", getNameOfType(node->type));
+				fprintf(stderr, "Expected an ES but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
 			syntaxnode* out = emptySyntaxnodeAlloc();
@@ -160,7 +133,7 @@ syntaxnode * makeSyntaxnodeFromAtom(struct parsenode * node){
 		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
 		return NULL;
 	} else if(node->type != TYPE_ATOM){
-		fprintf(stderr, "Expected an ATOM but encountered %s.", getNameOfType(node->type));
+		fprintf(stderr, "Expected an ATOM but encountered %s.", getNameOfParseNodeType(node->type));
 		return NULL;
 	} else if(node->numChildren != 0){
 		fprintf(stderr, "Expected a parsenode with just a token, got one with %d children.",node->numChildren);

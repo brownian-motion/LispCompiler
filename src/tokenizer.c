@@ -2,43 +2,31 @@
 
 #include "tokenizer.h"
 
-//TODO: make buffer a struct that can be manipulated in a local rather than global way
-
-int main(int argc, char* argv[]){
-	if(argc == 2 && (strcmp(argv[1],"-h") == 0 || strcmp(argv[1],"/?") == 0) ){
-		puts("Usage: tokenizer < inputfile.jlisp");
-		return 0;
+int addToTokenBuffer(tokenizer * t, char c){
+	if(t->tokenBufferEnd < MAX_TOKEN_SIZE || c=='\0') {
+		t->tokenBuffer[t->tokenBufferEnd++] = c;
+		return 1; //indicate success
+	} else {
+		return 0; //indicate failure
 	}
-	//assume that the stdin now refers to a valid input file
+}
 
-	char *tokenBuffer = (char *) malloc(MAX_TOKEN_SIZE+1);
-	if(tokenBuffer == NULL){
-		fputs("Could not allocate heap memory.", stderr);
-		return MEMORY_ALLOCATION_ERROR;
-	}
+int hasNextToken(tokenizer * t){
+	skipWhitespaceAndCommentsUntilNextToken(t);
+	return fPeekChar(t->file) != EOF;
+}
 
-	int tokenBufferEnd = 0;
+token * getNextToken(tokenizer * t){
+	char c; //to hold the current character of interest
+	int colNumberAtStartOfToken = 0; //to keep track of the position where the token started
+	int state = STATE_EMPTY;
 
-	char c;
-
-	int state = 0;
-	int lineNumber = 1;
-	int colNumber = 0; //will increment to 1 on the first read
-	int colNumberAtStartOfToken = 0;
-
-	while( (c = peekChar()) != EOF){
-		//printf("STATE %d CHAR '%c'\n",state, c);
+	while( (c = fPeekChar(t->file)) != EOF){
 		switch(state){
 			case STATE_EMPTY:
-				assert(tokenBufferEnd == 0);
+				assert(t->tokenBufferEnd == 0);
 				if(is_whitespace(c)){
-					consumeChar(); //consume this one whitespace character
-					if(c == '\n'){
-						lineNumber++;
-						colNumber = 0; //will increment to 1 on the next read
-					} else {
-						colNumber++;
-					}
+					skipWhitespaceUntilNextToken(t);
 					continue; // don't add to the buffer
 				} else if(is_digit(c)){
 					state = STATE_NUMBER;
@@ -54,80 +42,111 @@ int main(int argc, char* argv[]){
 				} else {
 					state = STATE_ERROR;
 				}
-				addToTokenBuffer(c);
-				colNumber++;
-				colNumberAtStartOfToken = colNumber; //save this so that we can print the correct spot later
-				consumeChar();
+				addToTokenBuffer(t,c);
+				t->colNumber++;
+				colNumberAtStartOfToken = t->colNumber; //save this so that we can print the correct spot later
+				fConsumeChar(t->file);
 				break;
 			case STATE_NUMBER:
 				if(is_digit(c)){
-					addToTokenBuffer(c);
-					consumeChar();
-					colNumber++;
+					addToTokenBuffer(t,c);
+					fConsumeChar(t->file);
+					t->colNumber++;
 				} else {
-					addToTokenBuffer('\0');
-					printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
-					tokenBufferEnd = 0;
-					state = STATE_EMPTY;
+					addToTokenBuffer(t,'\0');
+					t->tokenBufferEnd = 0;
+					return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
 				}
 				break;
 			default:
 				fputs("Encountered an undefined state. Interpreting as an erroneous token.",stderr);
-				state = STATE_ERROR; //fallthrough to STATE_ERROR because we encountered an error
+				state = STATE_ERROR;
+				//fall through to STATE_ERROR without waiting for the next loop because we encountered an error
 			case STATE_ERROR:
 				if(is_whitespace(c)){
-					addToTokenBuffer('\0');
-					printTokenData(state, lineNumber, colNumber, tokenBuffer); //choose colNumber to report the precise spot where the error happened
-					tokenBufferEnd = 0;
-					state = STATE_EMPTY;
-					fprintf(stderr,"Erroneous token encountered: %s\n",tokenBuffer);
+					addToTokenBuffer(t,'\0');
+					t->tokenBufferEnd = 0;
+					fprintf(stderr,"Erroneous token encountered: %s\n",t->tokenBuffer);
+					return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
 				} else {
-					addToTokenBuffer(c);
-					consumeChar();
-					colNumber++;
+					addToTokenBuffer(t,c);
+					fConsumeChar(t->file);
+					t->colNumber++;
 				}
 				break;
 			case STATE_LIST_START:
+			case STATE_LIST_END: //The process is identical for both cases
 				//Expected to only be one char.
 				//This char would have already been added by the empty state,
 				//so just end the token here.
-				addToTokenBuffer('\0');
-				printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
-				tokenBufferEnd = 0;
-				state = STATE_EMPTY;
-				//let the next pass takes care of it
-				break;
-			case STATE_LIST_END:
-				addToTokenBuffer('\0');
-				printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
-				tokenBufferEnd = 0;
-				state = STATE_EMPTY;
+				addToTokenBuffer(t,'\0');
+				t->tokenBufferEnd = 0;
+				return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
 				break;
 			case STATE_ID:
 				if(is_id(c)){
-					addToTokenBuffer(c);
-					consumeChar(); //don't nest this call, because c is already equal to the value this would return
+					addToTokenBuffer(t,c);
+					fConsumeChar(t->file); //don't nest this call, because c is already equal to the value this would return
 				} else {
-					addToTokenBuffer('\0');
-					printTokenData(state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
-					state = STATE_EMPTY;
-					//don't consume the buffered char, though, to let the empty state handle it
+					addToTokenBuffer(t,'\0');
+					t->tokenBufferEnd = 0;
+					return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
 				}
 				break;
 			case STATE_COMMENT:
-				if(c == '\n'){
-					state = STATE_EMPTY;
-				} else { //only consume up UNTIL the newline, and let the empty state handle the wraparound
-					consumeChar();	
-				}
+				assert(t->tokenBufferEnd == 0);
+				skipCommentUntilStartOfLine(t);
 				break;
 		}
 	}
 	//Handle the final token when EOF is encountered
 	if(state != STATE_EMPTY && state != STATE_COMMENT){
-		addToTokenBuffer('\0');
-		printTokenData( state, lineNumber, colNumberAtStartOfToken, tokenBuffer);
+		addToTokenBuffer(t,'\0');
+		t->tokenBufferEnd = 0;
+		return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
+	} else {
+		return allocAndInitializeToken(TYPE_TOKEN_EOF,-1,-1,"EOF");
 	}
+}
+
+void skipWhitespaceAndCommentsUntilNextToken(tokenizer * t){
+	char c;
+	while( (c = fPeekChar(t->file)) != EOF) {
+		if(is_whitespace(c)){
+			skipWhitespaceUntilNextToken(t);
+		} else if(c == ';'){
+			skipCommentUntilStartOfLine(t);
+		} else { //reached something that isn't a comment
+			return;
+		}
+	}
+}
+
+void skipWhitespaceUntilNextToken(tokenizer * t){
+	char c = fPeekChar(t->file);
+	while(c!= EOF && is_whitespace(c)){
+		if(is_whitespace(c)){
+			if(c == '\n'){
+				t->lineNumber++;
+				t->colNumber = 0; //will increment to 1 on the next read
+			} else {
+				t->colNumber++;
+			}
+			fConsumeChar(t->file); //consume this one whitespace character
+		} else {
+			break;
+		}
+		c = fPeekChar(t->file);
+	}
+}
+
+void skipCommentUntilStartOfLine(tokenizer * t){
+	char c = fConsumeChar(t->file);
+	while(c != EOF && c != '\n'){
+		c = fConsumeChar(t->file);
+	}
+	t->lineNumber++;
+	t->colNumber = 0;
 }
 
 char fPeekChar(FILE* f){

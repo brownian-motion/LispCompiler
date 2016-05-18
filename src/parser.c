@@ -6,7 +6,7 @@
 #define DO_PRINT_RESULT_PARSE_TREE 1
 
 /**
- * Generates a parse tree of the given file, assumed to represent a valid .jtoken file.
+ * Generates a parse tree of the given source code file, assumed to represent a valid .jlisp file.
  * On success, returns 0 and places the generated PROGRAM parsenode into *output.
  * On failure, returns an error code and does not modify *output.
  *
@@ -16,8 +16,8 @@
  */
 int buildParseTree(FILE * file, struct parsenode * output){
 	struct parseStack stack = makeParseStack();
-	token lookAhead;
-	fgetToken(file, &lookAhead);
+	tokenizer fileTokenizer = makeTokenizerFromFile(file); //stack allocated
+	token * lookAhead = getNextToken(&fileTokenizer); //never null, might represent EOF
 	int numIterations = 0;
 
 	while(isEmpty(stack) || peek(&stack).type != TYPE_PROGRAM){
@@ -34,9 +34,9 @@ int buildParseTree(FILE * file, struct parsenode * output){
 			printTokenDebug(lookAhead);
 		#endif
 		int shouldReduceResult;
-		if(lookAhead.type == TYPE_TOKEN_ERROR){
+		if(lookAhead->type == TYPE_TOKEN_ERROR){
 			#ifdef DO_PRINT_PARSE_ERRORS
-				printf("Parse error #%3d: Line #%3d, Col %3d: Invalid token encountered: \"%s\".\n", PARSE_ERROR_INVALID_TOKEN, lookAhead.lineNumber, lookAhead.colNumber, lookAhead.text);
+				printf("Parse error #%3d: Line #%3d, Col %3d: Invalid token encountered: \"%s\".\n", PARSE_ERROR_INVALID_TOKEN, lookAhead->lineNumber, lookAhead->colNumber, lookAhead->text);
 			#endif
 			return PARSE_ERROR_INVALID_TOKEN;
 		}
@@ -84,20 +84,20 @@ int buildParseTree(FILE * file, struct parsenode * output){
 					case TYPE_E:
 						//hit an rparen, and should make an empty ES,
 						//or hit end of file and should make program
-						if(lookAhead.type == TYPE_TOKEN_EOF)
+						if(lookAhead->type == TYPE_TOKEN_EOF)
 							push(&stack, makeProgram(pop(&stack)));
 						else
 							push(&stack, makeEmptyEs());
 						break;
 						#ifdef DO_PRINT_PARSE_ERRORS
-							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a program parse node: ",PARSE_ERROR_PROGRAM_NODE_REDUCED, lookAhead.lineNumber, lookAhead.colNumber);
+							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a program parse node: ",PARSE_ERROR_PROGRAM_NODE_REDUCED, lookAhead->lineNumber, lookAhead->colNumber);
 							fprintParseNode(stderr,peek(&stack));
 							fprintf(stderr,"\n");
 						#endif
 						return PARSE_ERROR_PROGRAM_NODE_REDUCED;
 					default:
 						#ifdef DO_PRINT_PARSE_ERRORS
-							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a parse node of unknown type: ",PARSE_ERROR_UNKNOWN_NODE_REDUCED, lookAhead.lineNumber, lookAhead.colNumber);
+							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a parse node of unknown type: ",PARSE_ERROR_UNKNOWN_NODE_REDUCED, lookAhead->lineNumber, lookAhead->colNumber);
 							fprintParseNode(stderr, peek(&stack));
 							fprintf(stderr,"\n");
 						#endif
@@ -109,18 +109,18 @@ int buildParseTree(FILE * file, struct parsenode * output){
 				#ifdef DO_DEBUG_STACK
 					printf(" (shifting)\n");
 				#endif
-				if(lookAhead.type == TYPE_TOKEN_EOF){
+				if(lookAhead->type == TYPE_TOKEN_EOF){
 					#ifdef DO_PRINT_PARSE_ERRORS
 						fprintf(stderr, "Parse error #%3d: Unexpected end of file.",PARSE_ERROR_EARLY_EOF);
 					#endif
 					return PARSE_ERROR_EARLY_EOF;
 				}
-				push(&stack,makeAtom(lookAhead));
-				fgetToken(file, &lookAhead);
+				push(&stack,makeAtom(lookAhead)); //relinquises control of the token to the atom
+				lookAhead = getNextToken(&fileTokenizer);
 				break;
 			default:
 				#ifdef DO_PRINT_PARSE_ERRORS
-					fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Syntax error :\"%s\"\n.",PARSE_ERROR_SYNTAX_ERROR, lookAhead.lineNumber, lookAhead.colNumber, lookAhead.text);
+					fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Syntax error :\"%s\"\n.",PARSE_ERROR_SYNTAX_ERROR, lookAhead->lineNumber, lookAhead->colNumber, lookAhead->text);
 				#endif
 				return PARSE_ERROR_SYNTAX_ERROR;
 		}
@@ -140,7 +140,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
  * (without modifying the stack) if the parser should reduce the stack
  * without consuming more tokens.
  */
-int shouldReduce(struct parseStack stack, token lookAhead){
+int shouldReduce(struct parseStack stack, token * lookAhead){
 	if(isEmpty(stack))
 		return 0;
 	switch(peek(&stack).type){
@@ -150,9 +150,9 @@ int shouldReduce(struct parseStack stack, token lookAhead){
 		case TYPE_E:
 			//If the upcoming token is a right parentheses, we need to reduce by putting an empty Es onto the stack and doing nothing else
 			//Otherwise, we need more tokens
-			return lookAhead.type == TYPE_TOKEN_RPAREN || lookAhead.type == TYPE_TOKEN_EOF;
+			return lookAhead->type == TYPE_TOKEN_RPAREN || lookAhead->type == TYPE_TOKEN_EOF;
 		case TYPE_ES:
-			assert(lookAhead.type == TYPE_TOKEN_RPAREN);
+			assert(lookAhead->type == TYPE_TOKEN_RPAREN);
 			//If the stack currently is ... atom(LPAREN) E Es, then we need to shift in order to get the right paren we need to reduce
 			//Otherwise, we don't need to reduce
 			return size(stack)>= 3 && (stack.top->next->next->data.type != TYPE_ATOM || stack.top->next->next->data.tokenPtr->type != TYPE_TOKEN_LPAREN);
@@ -167,40 +167,3 @@ int shouldReduce(struct parseStack stack, token lookAhead){
 			return 0;
 	}
 }
-
-/*
-int isTokenInPredictSet(struct parsenode node, token t){
-	switch(node.type){
-		case TYPE_PROGRAM:
-			fputs(stderr,"Somehow checked the predict set for a program");
-			return 0; //HOW WOULD THIS EVEN HAPPEN?
-		case TYPE_E:
-			switch(t.type){
-				case TYPE_TOKEN_NUMBER:
-					return 1;
-				case TYPE_TOKEN_ID:
-					return 1;
-				case TYPE_TOKEN_LPAREN:
-					return 1;
-				case TYPE_TOKEN_RPAREN:
-					return 1;
-			}
-		case TYPE_ES:
-			switch(t.type){
-				case TYPE_TOKEN_NUMBER:
-
-				case TYPE_TOKEN_ID:
-
-				case TYPE_TOKEN_LPAREN:
-					return 0;
-				case TYPE_TOKEN_RPAREN:
-			}
-		case TYPE_ATOM:
-			switch(t.type){
-
-			}
-		case default:
-			fprintf(stderr,"Somehow checked the predict set for unidentified state %d\n",node.type);
-			return 0;
-	}
-}*/

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "parsenode.h"
+#include "tokenizer.c"
 #include "stack.h"
 
 #define PARSE_SUCCESS 0
@@ -14,5 +15,5 @@
 #define PARSE_ERROR_PROGRAM_NODE_REDUCED -6
 
 int buildParseTree(FILE *, struct parsenode *);
-int shouldReduce(struct parseStack, token);
+int shouldReduce(struct parseStack, token *);
 // int isTokenInPredictSet(struct parsenode, token);
