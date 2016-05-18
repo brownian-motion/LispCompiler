@@ -17,6 +17,7 @@
 #define SYNTAX_CAR_TYPE_STRING 5
 
 #define EMPTY_SYNTAX_NODE_CDR NULL
+#define NIL &EMPTY_SYNTAX_NODE
 
 /**
  * A small struct that represents a single node of an abstract syntax tree,
@@ -55,7 +56,7 @@ syntaxnode * syntaxnodeAlloc(int num){
  * Precondition: node is not NULL
  */
 int isEmptySyntaxNode(syntaxnode * node){
-	return node->carType == SYNTAX_CAR_TYPE_EMPTY;
+	return node == NIL || node->carType == SYNTAX_CAR_TYPE_EMPTY;
 }
 
 /**
