@@ -115,7 +115,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 					#endif
 					return PARSE_ERROR_EARLY_EOF;
 				}
-				push(&stack,makeAtom(lookAhead)); //relinquises control of the token to the atom
+				push(&stack,makeAtom(lookAhead)); //relinquishes control of the token to the atom
 				lookAhead = getNextToken(&fileTokenizer);
 				break;
 			default:
