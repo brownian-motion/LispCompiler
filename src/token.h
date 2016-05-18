@@ -27,31 +27,45 @@ token * tokenAlloc(int numTokens){
 }
 
 /**
- * Performs a shallow copy of the fields of the token pointed to by ptr
+ * Performs a deep copy of the fields of the token pointed to by uninitializedTokenPtr,
+ * allocating a new cstring to store in uninitializedTokenPtr->text.
+ * This function does not free uninitializedTokenPtr->text, so any calls to fillToken
+ * providing an initialized token will result in a memory leak.
  */
-void fillToken(token * ptr, int type, int lineNumber, int colNumber, char * text){
-	ptr -> type = type;
-	ptr -> lineNumber = lineNumber;
-	ptr -> colNumber = colNumber;
-	ptr -> text = text;
+void initializeToken(token * uninitializedTokenPtr, int type, int lineNumber, int colNumber, char * text){
+	uninitializedTokenPtr -> type = type;
+	uninitializedTokenPtr -> lineNumber = lineNumber;
+	uninitializedTokenPtr -> colNumber = colNumber;
+	int len = strlen(text);
+	uninitializedTokenPtr -> text = (char *)malloc((len + 1) * sizeof(char));
+	strcpy(uninitializedTokenPtr->text, text);
 }
 
-void fgetToken(FILE *file, token * container){
+/**
+ * Allocates a token using malloc() and fills it with the given data
+ */
+token * allocAndInitializeToken(int type, int lineNumber, int colNumber, char * text){
+	token * tokenPtr = tokenAlloc(1);
+	initializeToken(tokenPtr, type, lineNumber, colNumber, text);
+	return tokenPtr;
+}
+
+void fgetAnnotatedToken(FILE *file, token * uninitializedContainer){
 	if(!feof(file)){
 		char* buffer = (char *) malloc(sizeof(char) * (MAX_TOKEN_SIZE+1));
 		buffer[MAX_TOKEN_SIZE] = '\0';
 		int state, lineNumber, colNumber;
 		fscanf(file, "%d %d %d %s\n",&state, &lineNumber, &colNumber, buffer);
-		fillToken(container, state, lineNumber, colNumber, buffer);
+		initializeToken(uninitializedContainer, state, lineNumber, colNumber, buffer);
 	} else { //EOF encountered
 		char * buffer = (char*) malloc(sizeof(char));
 		buffer[0] = '\0';
-		fillToken(container, TYPE_TOKEN_EOF, -1, -1, buffer);
+		initializeToken(uninitializedContainer, TYPE_TOKEN_EOF, -1, -1, buffer);
 	}
 }
 
-void getToken(token * container){
-	fgetToken(stdin, container);
+void getAnnotatedToken(token * uninitializedContainer){
+	fgetAnnotatedToken(stdin, uninitializedContainer);
 }
 //TODO: change to token pointer to conserve memory and speed compilation time
 void fprintToken(FILE* file, token t){
@@ -92,14 +106,15 @@ int is_id(char c){
 }
 
 /**
- * Returns true if c is a whitespace character
+ * Returns true if c is a whitespace character in the language.
+ * EOF is not considered whitespace.
  */
 int is_whitespace(char c){
-	return isspace(c);
+	return c != EOF && isspace(c);
 }
 
 /**
- * Returns true if the character is considered an operator.
+ * Returns true if the character is considered an operator in the language.
  * Valid operators are + - * / %  = & | < > !
  */
 int is_op_char(char c){
@@ -122,9 +137,9 @@ int is_integer(char * s){
 	int len = strlen(s);
 	for(int i = 0 ; i < len ; i++){
 		if(!is_digit(s[i]))
-			return false;
+			return 0;
 	}
-	return true;
+	return 1;
 }
 
 /**
@@ -136,14 +151,14 @@ int is_float(char * s){
 	int hasFoundDecimalPoint = 0;
 	int len = strlen(s);
 	for(int i = 0 ; i < len ; i++){
-		if((s[i] == '.'){
+		if(s[i] == '.'){
 			if(hasFoundDecimalPoint)
-				return false;
+				return 0;
 			else
-				hasFoundDecimalPoint = true;
+				hasFoundDecimalPoint = 1;
 		} else if(!is_digit(s[i])){
-			return false;
+			return 0;
 		}
 	}
-	return true;
+	return 1;
 }

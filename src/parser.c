@@ -17,7 +17,7 @@
 int buildParseTree(FILE * file, struct parsenode * output){
 	struct parseStack stack = makeParseStack();
 	token lookAhead;
-	fgetToken(file, &lookAhead);
+	fgetAnnotatedToken(file, &lookAhead);
 	int numIterations = 0;
 
 	while(isEmpty(stack) || peek(&stack).type != TYPE_PROGRAM){
@@ -116,7 +116,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 					return PARSE_ERROR_EARLY_EOF;
 				}
 				push(&stack,makeAtom(lookAhead));
-				fgetToken(file, &lookAhead);
+				fgetAnnotatedToken(file, &lookAhead);
 				break;
 			default:
 				#ifdef DO_PRINT_PARSE_ERRORS
