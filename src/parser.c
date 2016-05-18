@@ -84,7 +84,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 					case TYPE_E:
 						//hit an rparen, and should make an empty ES,
 						//or hit end of file and should make program
-						if(lookAhead == NULL || lookAhead->type == TYPE_TOKEN_EOF)
+						if(lookAhead->type == TYPE_TOKEN_EOF)
 							push(&stack, makeProgram(pop(&stack)));
 						else
 							push(&stack, makeEmptyEs());
@@ -109,7 +109,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 				#ifdef DO_DEBUG_STACK
 					printf(" (shifting)\n");
 				#endif
-				if(lookAhead == NULL || lookAhead->type == TYPE_TOKEN_EOF){
+				if(lookAhead->type == TYPE_TOKEN_EOF){
 					#ifdef DO_PRINT_PARSE_ERRORS
 						fprintf(stderr, "Parse error #%3d: Unexpected end of file.",PARSE_ERROR_EARLY_EOF);
 					#endif
