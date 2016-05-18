@@ -11,6 +11,7 @@ int main(int argc, char* argv[]){
 
 	tokenizer stdinTokenizer = makeTokenizerFromFile(stdin);
 
+	//print these tokens to stdout as though it were a .jtoken file
 	while(hasNextToken(&stdinTokenizer)){
 		token * newToken = getNextToken(&stdinTokenizer);
 		printToken(*newToken);
