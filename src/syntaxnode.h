@@ -80,18 +80,6 @@ syntaxnode * emptySyntaxnodeAlloc(){
 }
 
 /**
- * Allocates a syntax tree node that represents the given token t.
- * The token is copied by pointer value, not by copying value.
- * This node is considered an atom.
- */
-syntaxnode * makeSyntaxTreeAtomFromToken(token * t){
-	syntaxnode * out = emptySyntaxnodeAlloc();
-	out->atom = t;
-	out->carType = SYNTAX_CAR_TYPE_TOKEN;
-	return out;
-}
-
-/**
  * Returns true if the given syntax node is an atom or not.
  * A syntax node is considered an atom if its carType is not
  * another syntax node. In use, this means that this syntax node
