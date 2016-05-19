@@ -42,6 +42,11 @@ int isDefined(const environmentNode * environment, char * identifier){
 /**
  * Iterates through the given environment to see if the given identifier 'key' has a definition.
  * Returns a pointer to the environmentNode that describes that definition, or NULL if none exists.
+ *
+ * This is particularly useful because it allows static scope:
+ * the only definitions that are active in some scope (such as a lambda) are all of the definitions
+ * that existed AT or BEFORE that scope's creation...
+ * which is what is returned by this function.
  */
 const environmentNode * findDefinitionForIdentifier(const environmentNode * environment, char * identifier){
 	while(environment != NULL){

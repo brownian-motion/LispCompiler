@@ -81,6 +81,19 @@ syntaxnode * emptySyntaxnodeAlloc(){
 }
 
 /**
+ * Allocates and returns a single syntax node using malloc()
+ * which is initialized as a non-leaf node of an asbtract syntax
+ * tree, with the given car and cdr.
+ */
+syntaxnode* allocSyntaxnodeFromCons(syntaxnode* car, syntaxnode* cdr){
+	syntaxnode* out = syntaxnodeAlloc(1);
+	out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
+	out->car = car;
+	out->cdr = cdr;
+	return out;
+}
+
+/**
  * Returns true if the given syntax node is an atom or not.
  * A syntax node is considered an atom if its carType is not
  * another syntax node. In use, this means that this syntax node
