@@ -12,7 +12,8 @@
 #define SYNTAX_CAR_TYPE_EMPTY -1
 #define SYNTAX_CAR_TYPE_TOKEN 1
 #define SYNTAX_CAR_TYPE_SYNTAX_NODE 3
-//The following two (_NUMBER and _STRING) are not yet implemented
+//The following three (_D, _NUMBER, and _STRING) are not yet implemented
+#define SYNTAX_CAR_TYPE_IDENTIFIER 2
 #define SYNTAX_CAR_TYPE_NUMBER 4
 #define SYNTAX_CAR_TYPE_STRING 5
 
@@ -32,6 +33,9 @@ struct _syntaxnode {
 	union {
 		struct _syntaxnode * car;
 		token * atom;
+		float floatValue;
+		char * stringValue;
+		char * identifier;
 	};
 	struct _syntaxnode * cdr;
 	int carType;
@@ -118,6 +122,15 @@ fprintSyntaxnodeAtom(FILE * f, syntaxnode * n){
 	switch(n->carType){
 		case SYNTAX_CAR_TYPE_TOKEN:
 			fprintTokenText(f, *(n->atom));
+			break;
+		case SYNTAX_CAR_TYPE_NUMBER:
+			fprintf(f,"%f",n->floatValue);
+			break;
+		case SYNTAX_CAR_TYPE_STRING:
+			fprintf(f,"%s",n->stringValue);
+			break;
+		case SYNTAX_CAR_TYPE_IDENTIFIER:
+			fprintf(f,"%s",n->identifier);
 			break;
 		default:
 			fprintf(stderr, "%s\n", "Encountered syntaxnode atom with unexpected carType. Printing <Unexpected atom type>");

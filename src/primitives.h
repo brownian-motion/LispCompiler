@@ -51,3 +51,26 @@ syntaxnode* quote(environmentNode* environment, syntaxnode* listOfArguments){
 	assert(listOfArguments != NULL);
 	return allocSyntaxnodeFromCons(listOfArguments,NIL); //its one argument should be a list
 }
+
+/**
+ * Modifies the given syntaxnode atom, whose car is a token, so that is represents its actual value.
+ * Also frees the token ??? //TODO: Decide this
+ *
+ * Floats get a floatValue and carType _NUMBER.
+ * Strings get a stringValue and carType _STRING
+ * Identifiers get a carType _IDENTIFIER
+ */
+void evaluateTokenType(syntaxnode* atomWithUnresolvedToken){
+	token t = *atomWithUnresolvedToken->atom;
+	//free(atomWithUnresolvedToken->atom);
+	if(is_float(t.text)){
+		atomWithUnresolvedToken->carType = SYNTAX_CAR_TYPE_NUMBER;
+		atomWithUnresolvedToken->floatValue = strtod(t.text,NULL);
+	} else if(is_string(t.text)){
+		atomWithUnresolvedToken->carType = SYNTAX_CAR_TYPE_STRING;
+		atomWithUnresolvedToken->stringValue = t.text;
+	} else {
+		atomWithUnresolvedToken->carType = SYNTAX_CAR_TYPE_IDENTIFIER;
+		atomWithUnresolvedToken->identifier = t.text;
+	}
+}

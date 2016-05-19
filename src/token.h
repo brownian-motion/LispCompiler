@@ -1,5 +1,6 @@
 #pragma once
 #include "states.h"
+
 #include <stdio.h>
 #include <string.h>
 #define MAX_TOKEN_SIZE 100
@@ -187,4 +188,22 @@ int is_float(char * s){
 		}
 	}
 	return 1;
+}
+
+/**
+ * Returns true if the cstring s represents a valid string in the language, and false otherwise.
+ * Currently, s is a valid string iff if begins and ends with the quote character \", and any
+ * quote character in the middle of the string is escaped with a backslash \\.
+ */
+int is_string(char * s){
+	int len = strlen(s);
+	if(len < 2)
+		return 0;
+	if(s[0] != '\"')
+		return 0;
+	for(int i = 1 ; i < len-1 ; i++){
+		if(s[i] == '\"' && s[i-1] != '\\')
+			return 0;
+	}
+	return s[len-1] == '\"' && s[len-2] != '\\';
 }
