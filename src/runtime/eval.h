@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string.h>
+#include "../util/string_util.h"
 #include "environment.h"
 
 void convertTokenToFloat(syntaxnode* atomNode);

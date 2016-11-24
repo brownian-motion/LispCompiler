@@ -2,12 +2,16 @@
 
 #include "primitives.h"
 
-syntaxnode* printASTToStdout(environmentNode * environment, syntaxnode* listOfArguments){
+syntaxnode* printListToStdout(environmentNode * environment, syntaxnode* listOfArguments){
 	assert(listOfArguments != NULL);
-	if(isEmptySyntaxNode(listOfArguments) || !isEmptySyntaxNode(listOfArguments->cdr)){
-		puts("print: contract violation\n\texpected exactly one argument");
+	if(isEmptySyntaxNode(listOfArguments)){
+		puts("print: contract violation\n\texpected at least one argument");
 	} else {
-		printSyntaxnode(listOfArguments->car);
+		while(listOfArguments != NULL && !isEmptySyntaxNode(listOfArguments)){
+			printSyntaxnode(listOfArguments->car);
+			putc(' ',stdout);
+			listOfArguments = cdr(environment, listOfArguments);
+		}
 		putc('\n',stdout);
 	}
 	return NIL;
@@ -28,8 +32,9 @@ syntaxnode* cdr(environmentNode* environment, syntaxnode* listOfArguments){
 	if(listOfArguments->cdr != NULL){
 		return listOfArguments->cdr;
 	} else {
-		puts("cdr: contract violation\n\texpected: pair");
-		return NULL; //indicate an error using the best means we have in C
+		return NIL;
+		// puts("cdr: contract violation\n\texpected: pair");
+		// return NULL; //indicate an error using the best means we have in C
 	}
 }
 
@@ -80,8 +85,10 @@ syntaxnode* let(environmentNode* environment, syntaxnode* listOfArguments){
 syntaxnode * plus(environmentNode* environment, syntaxnode* listOfArguments){
 	assert(listOfArguments != NULL);
 	float sum = 0.0f;
-	while(listOfArguments != NULL){
+	while(listOfArguments != NULL && !isEmptySyntaxNode(listOfArguments)){
+		// printListToStdout(environment, listOfArguments);
 		syntaxnode* addend = car(environment, listOfArguments);
+		addend = eval(environment, addend); //get the number value of this addend
 		assert(addend->carType == SYNTAX_CAR_TYPE_NUMBER);
 		sum += addend->floatValue;
 		listOfArguments = cdr(environment, listOfArguments);
@@ -89,5 +96,25 @@ syntaxnode * plus(environmentNode* environment, syntaxnode* listOfArguments){
 	syntaxnode* result = emptySyntaxnodeAlloc();
 	result->carType = SYNTAX_CAR_TYPE_NUMBER;
 	result->floatValue = sum;
+	return result;
+}
+
+syntaxnode * minus(environmentNode* environment, syntaxnode* listOfArguments){
+	assert(listOfArguments != NULL);
+
+	syntaxnode* addend = car(environment, listOfArguments);
+	addend = eval(environment, addend); //get the number value of this addend
+	assert(addend->carType == SYNTAX_CAR_TYPE_NUMBER);
+	
+	syntaxnode* subtends = cdr(environment, listOfArguments);
+
+	syntaxnode* result = emptySyntaxnodeAlloc();
+	result->carType = SYNTAX_CAR_TYPE_NUMBER;
+	if(subtends == NULL || isEmptySyntaxNode(subtends)){
+		result->floatValue = -addend->floatValue;
+	} else {
+		syntaxnode* sumOfSubtends = plus(environment, subtends);
+		result->floatValue = addend->floatValue - sumOfSubtends->floatValue;
+	}
 	return result;
 }

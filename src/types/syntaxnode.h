@@ -23,6 +23,29 @@
 #define EMPTY_SYNTAX_NODE_CDR NULL
 #define NIL &EMPTY_SYNTAX_NODE
 
+char* getSyntaxnodeCarTypeName(int carType){
+	switch(carType){
+		case SYNTAX_CAR_TYPE_EMPTY:
+			return "<CAR EMPTY>";
+		case SYNTAX_CAR_TYPE_TOKEN:
+			return "<CAR TOKEN>";
+		case SYNTAX_CAR_TYPE_SYNTAX_NODE:
+			return "<CAR SYNTAXNODE>";
+		case SYNTAX_CAR_TYPE_IDENTIFIER:
+			return "<CAR IDENTIFIER>";
+		case SYNTAX_CAR_TYPE_NUMBER:
+			return "<CAR NUMBER>";
+		case SYNTAX_CAR_TYPE_STRING:
+			return "<CAR STRING>";
+		case SYNTAX_CAR_TYPE_PRIMITIVE:
+			return "<CAR PRIMITIVE>";
+		case SYNTAX_CAR_TYPE_LAMBDA:
+			return "<CAR LAMBDA>";
+		default:
+			return "<CAR ???UNKNOWN???>";
+	}
+}
+
 /**
  * A small struct that represents a single node of an abstract syntax tree,
  * including both subtrees and atoms.

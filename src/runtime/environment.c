@@ -7,22 +7,8 @@
  * Each definition matches an identifier (cstring) to an AST (syntaxnode *)
  */
 
-#define ENVIRONMENT_NODE_TYPE_EMPTY 0
-#define ENVIRONMENT_NODE_TYPE_AST 1
-#define ENVIRONMENT_NODE_TYPE_PRIMITIVE 2
 
 
-struct _environmentNode {
-	char * identifier;
-	union {
-		syntaxnode* ast;
-		PRIMITIVE_FUNCTION* primitive; 	//a primitive is a C function that takes in an enironment and an AST and gives back an AST
-	};
-	const struct _environmentNode * next;
-	int nodeType; //either ENVIRONMENT_NODE_TYPE_AST or ENVIRONMENT_NODE_TYPE_PRIMITIVE
-};
-
-typedef struct _environmentNode environmentNode;
 
 /**
  * Iterates through the given environment to see if the given identifier has a definition.
@@ -101,7 +87,7 @@ void overwriteNodeDefinitionToAST(environmentNode * definitionToOverwrite, char 
  *
  * Precondition: definitionToOverwrite is not NULL
  */
-void overwriteNodeDefinitionToPrimitive(environmentNode * definitionToOverwrite, char * identifier, primitiveFunction* primitive){
+void overwriteNodeDefinitionToPrimitive(environmentNode * definitionToOverwrite, char * identifier, PRIMITIVE_FUNCTION* primitive){
 	definitionToOverwrite->nodeType = ENVIRONMENT_NODE_TYPE_PRIMITIVE;
 	definitionToOverwrite->identifier = identifier;
 	definitionToOverwrite->primitive = primitive;
@@ -122,7 +108,7 @@ environmentNode* define(const environmentNode* previousEnvironment, char* identi
  * Addes a new [identifier => primitive] definition to the given environment
  * and returns a pointer to the new enviroment without modifying the old one.
  */
-environmentNode* definePrimitive(const environmentNode* previousEnvironment, char* identifier, primitiveFunction* primitive){
+environmentNode* definePrimitive(const environmentNode* previousEnvironment, char* identifier, PRIMITIVE_FUNCTION* primitive){
 	environmentNode* newDefinition = allocEnvironmentNode(1);
 	overwriteNodeDefinitionToPrimitive(newDefinition, identifier, primitive);
 	newDefinition->next = previousEnvironment;

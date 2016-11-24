@@ -194,6 +194,7 @@ int is_float(char * s){
  * Returns true if the cstring s represents a valid string in the language, and false otherwise.
  * Currently, s is a valid string iff if begins and ends with the quote character \", and any
  * quote character in the middle of the string is escaped with a backslash \\.
+ * Literal regex: "([^"]|\")*"
  */
 int is_string(char * s){
 	int len = strlen(s);

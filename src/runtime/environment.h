@@ -13,6 +13,17 @@
 #define ENVIRONMENT_NODE_TYPE_AST 1
 #define ENVIRONMENT_NODE_TYPE_PRIMITIVE 2
 
+struct _environmentNode {
+	char * identifier;
+	union {
+		syntaxnode* ast;
+		PRIMITIVE_FUNCTION* primitive; 	//a primitive is a C function that takes in an enironment and an AST and gives back an AST
+	};
+	const struct _environmentNode * next;
+	int nodeType; //either ENVIRONMENT_NODE_TYPE_AST or ENVIRONMENT_NODE_TYPE_PRIMITIVE
+};
+
+typedef struct _environmentNode environmentNode;
 
 /**
  * Iterates through the given environment to see if the given identifier has a definition.

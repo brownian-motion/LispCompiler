@@ -113,9 +113,12 @@ fprintSyntaxnodeAtom(FILE * f, syntaxnode * n){
 		case SYNTAX_CAR_TYPE_IDENTIFIER:
 			fprintf(f,"%s",n->identifier);
 			break;
+		case SYNTAX_CAR_TYPE_PRIMITIVE:
+			fprintf(f, "<# procedure>");
+			break;
 		default:
 			fprintf(stderr, "%s\n", "Encountered syntaxnode atom with unexpected carType. Printing <Unexpected atom type>");
-			fprintf(f,"%s\n","<Unexpected atom type>");
+			fprintf(f,"%s","<Unexpected atom type>");
 			break;
 	}
 }

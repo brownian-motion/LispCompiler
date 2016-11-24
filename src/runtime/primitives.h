@@ -19,7 +19,7 @@
  */
 
 
-PRIMITIVE_FUNCTION printASTToStdout;
+PRIMITIVE_FUNCTION printListToStdout;
 
 
 /**
@@ -57,6 +57,16 @@ PRIMITIVE_FUNCTION quote;
  * Example usage: (plus 1 2 3) -> 6
  */
 PRIMITIVE_FUNCTION plus;
+
+/**
+ * Returns the difference between the first number and the sum of the nubmers following it,
+ * or the opposite of the first number iff only one number is given
+ * Syntax: 	(minus <numberToNegate>)
+ * 			(minus <addend> <subtends> ... )
+ * Example usage: (minus 3) -> -3
+ * Example usage: (minus 1 2 3) -> -4
+ */
+ PRIMITIVE_FUNCTION minus;
 
 /**
  * Defines one or more variables within scope of its body, and returns the result of evaluating that body
