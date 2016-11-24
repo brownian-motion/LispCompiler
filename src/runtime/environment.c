@@ -1,7 +1,5 @@
 #pragma once
-#include "../types/syntaxnode.c"
-#include "../types/primitiveFunction.h"
-#include "../types/environmentNode.h"
+#include "environment.h"
 
 /**
  * This file defines the surrounding environment for the language.
@@ -14,11 +12,31 @@
 #define ENVIRONMENT_NODE_TYPE_PRIMITIVE 2
 
 
+struct _environmentNode {
+	char * identifier;
+	union {
+		syntaxnode* ast;
+		PRIMITIVE_FUNCTION* primitive; 	//a primitive is a C function that takes in an enironment and an AST and gives back an AST
+	};
+	const struct _environmentNode * next;
+	int nodeType; //either ENVIRONMENT_NODE_TYPE_AST or ENVIRONMENT_NODE_TYPE_PRIMITIVE
+};
+
+typedef struct _environmentNode environmentNode;
+
 /**
  * Iterates through the given environment to see if the given identifier has a definition.
  * Returns true if a definition exists, and false otherwise.
  */
-int isDefined(const environmentNode * environment, char * identifier);
+int isDefined(const environmentNode * environment, char * identifier){
+	while(environment != NULL){
+		if(strcmp(identifier, environment->identifier) == 0){
+			return 1;
+		}
+		environment = environment->next;
+	}
+	return 0;
+}
 
 /**
  * Iterates through the given environment to see if the given identifier 'key' has a definition.
@@ -29,18 +47,33 @@ int isDefined(const environmentNode * environment, char * identifier);
  * that existed AT or BEFORE that scope's creation...
  * which is what is returned by this function.
  */
-const environmentNode * findDefinitionForIdentifier(const environmentNode * environment, char * identifier);
+const environmentNode * findDefinitionForIdentifier(const environmentNode * environment, char * identifier){
+	while(environment != NULL){
+		if(strcmp(identifier, environment->identifier) == 0){
+			return environment;
+		}
+		environment = environment->next;
+	}
+	return NULL;
+}
 
 /** 
  * Allocates using malloc() a block of memory big enough to hold num environmentNodes.
  * Returns a pointer to that block.
  */
-environmentNode * allocEnvironmentNode(int num);
+environmentNode * allocEnvironmentNode(int num){
+	return (environmentNode*) malloc( num * sizeof(environmentNode) );
+}
 
 /**
  * Allocates and initializes a single empty environmentNode that points to NULL.
  */
-environmentNode * allocInitializedEmptyEnvironmentNode();
+environmentNode * allocInitializedEmptyEnvironmentNode(){
+	environmentNode* out = allocEnvironmentNode(1);
+	out->nodeType = ENVIRONMENT_NODE_TYPE_EMPTY;
+	out->next = NULL;
+	return out;
+}
 
 /**
  * Overwrites the provided environmentNode* to the given [identifier => ast] definition
@@ -50,7 +83,11 @@ environmentNode * allocInitializedEmptyEnvironmentNode();
  *
  * Precondition: definitionToOverwrite is not NULL
  */
-void overwriteNodeDefinitionToAST(environmentNode * definitionToOverwrite, char * identifier, syntaxnode * ast);
+void overwriteNodeDefinitionToAST(environmentNode * definitionToOverwrite, char * identifier, syntaxnode * ast){
+	definitionToOverwrite->nodeType = ENVIRONMENT_NODE_TYPE_AST;
+	definitionToOverwrite->identifier = identifier;
+	definitionToOverwrite->ast = ast;
+}
 
 /**
  * Overwrites the provided environmentNode* to the given [identifier => primitive] definition
@@ -64,19 +101,34 @@ void overwriteNodeDefinitionToAST(environmentNode * definitionToOverwrite, char 
  *
  * Precondition: definitionToOverwrite is not NULL
  */
-void overwriteNodeDefinitionToPrimitive(environmentNode * definitionToOverwrite, char * identifier, PRIMITIVE_FUNCTION* primitive);
+void overwriteNodeDefinitionToPrimitive(environmentNode * definitionToOverwrite, char * identifier, primitiveFunction* primitive){
+	definitionToOverwrite->nodeType = ENVIRONMENT_NODE_TYPE_PRIMITIVE;
+	definitionToOverwrite->identifier = identifier;
+	definitionToOverwrite->primitive = primitive;
+}
 
 /**
  * Addes a new [identifier => AST] definition to the given environment
  * and returns a pointer to the new enviroment without modifying the old one.
  */
-environmentNode* define(const environmentNode* previousEnvironment, char* identifier, syntaxnode* ast);
+environmentNode* define(const environmentNode* previousEnvironment, char* identifier, syntaxnode* ast){
+	environmentNode* newDefinition = allocEnvironmentNode(1);
+	overwriteNodeDefinitionToAST(newDefinition, identifier, ast);
+	newDefinition->next = previousEnvironment;
+	return newDefinition;
+}
 
 /**
  * Addes a new [identifier => primitive] definition to the given environment
  * and returns a pointer to the new enviroment without modifying the old one.
  */
-environmentNode* definePrimitive(const environmentNode* previousEnvironment, char* identifier, PRIMITIVE_FUNCTION* primitive);
+environmentNode* definePrimitive(const environmentNode* previousEnvironment, char* identifier, primitiveFunction* primitive){
+	environmentNode* newDefinition = allocEnvironmentNode(1);
+	overwriteNodeDefinitionToPrimitive(newDefinition, identifier, primitive);
+	newDefinition->next = previousEnvironment;
+	return newDefinition;
+}
+
 /**
  * Removes the top-level definition, if present, and frees the memory that environmentNode* occupies.
  * Returns the resulting environment (what the given environment considered its parent).
@@ -84,4 +136,10 @@ environmentNode* definePrimitive(const environmentNode* previousEnvironment, cha
  * The data stored in the given environmentNode is not modified or freed. That control is 
  * the responsibility of the caller.
  */
-const environmentNode* freeTopDefinition(environmentNode* environmentToDestroy);
+const environmentNode* freeTopDefinition(environmentNode* environmentToDestroy){
+	if(environmentToDestroy == NULL)
+		return NULL;
+	const environmentNode* newEnvironment = environmentToDestroy->next;
+	free(environmentToDestroy);
+	return newEnvironment;
+}
