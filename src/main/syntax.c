@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../syntax.c"
+#include "../parser/syntax.c"
 
 int main(int argc, char* argv[]){
 	int errorcode = 0;

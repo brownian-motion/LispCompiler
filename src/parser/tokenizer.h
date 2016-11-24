@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <assert.h>
-#include "token.h"
+#include "../types/token.h"
 #define MEMORY_ALLOCATION_ERROR -2
 
 //TODO: add functions that read directly from a FILE* file buffer and return a single token

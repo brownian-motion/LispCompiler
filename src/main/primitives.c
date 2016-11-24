@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../environment.h"
-#include "../primitives.h"
+#include "../runtime/environment.h"
+#include "../runtime/primitives.h"
 
 int main(){
 	//nothing. just wanted to test these included files

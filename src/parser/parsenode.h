@@ -1,5 +1,5 @@
 #pragma once
-#include "token.h"
+#include "../types/token.h"
 
 #define TYPE_ATOM 1
 #define TYPE_E 2

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "syntax.c"
+#include <assert.h>
+#include "../types/syntaxnode.h"
 #include "environment.h"
 
 /**

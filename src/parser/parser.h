@@ -1,5 +1,5 @@
 #pragma once
-#include "token.h"
+#include "../types/token.h"
 #include <stdio.h>
 #include <assert.h>
 #include "parsenode.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../parser.c"
+#include "../parser/parser.c"
 
 int main(int argc, char* argv []){
 	struct parsenode program;

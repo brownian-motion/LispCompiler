@@ -1,5 +1,5 @@
 #pragma once
-#include "syntax.c"
+#include "../types/syntaxnode.h"
 
 /**
  * This file defines the surrounding environment for the language.

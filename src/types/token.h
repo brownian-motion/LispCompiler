@@ -1,5 +1,5 @@
 #pragma once
-#include "states.h"
+#include "../parser/states.h"
 
 #include <stdio.h>
 #include <string.h>

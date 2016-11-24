@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../tokenizer.c"
+#include "../parser/tokenizer.c"
 
 int main(int argc, char* argv[]){
 	if(argc == 2 && (strcmp(argv[1],"-h") == 0 || strcmp(argv[1],"/?") == 0) ){
