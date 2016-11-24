@@ -1,5 +1,6 @@
 #pragma once
 #include "token.h"
+#include "primitiveFunction.h"
 #ifndef NULL
 #define NULL 0
 #endif
@@ -16,9 +17,34 @@
 #define SYNTAX_CAR_TYPE_IDENTIFIER 2
 #define SYNTAX_CAR_TYPE_NUMBER 4
 #define SYNTAX_CAR_TYPE_STRING 5
+#define SYNTAX_CAR_TYPE_PRIMITIVE 6
+#define SYNTAX_CAR_TYPE_LAMBDA 7
 
 #define EMPTY_SYNTAX_NODE_CDR NULL
 #define NIL &EMPTY_SYNTAX_NODE
+
+char* getSyntaxnodeCarTypeName(int carType){
+	switch(carType){
+		case SYNTAX_CAR_TYPE_EMPTY:
+			return "<CAR EMPTY>";
+		case SYNTAX_CAR_TYPE_TOKEN:
+			return "<CAR TOKEN>";
+		case SYNTAX_CAR_TYPE_SYNTAX_NODE:
+			return "<CAR SYNTAXNODE>";
+		case SYNTAX_CAR_TYPE_IDENTIFIER:
+			return "<CAR IDENTIFIER>";
+		case SYNTAX_CAR_TYPE_NUMBER:
+			return "<CAR NUMBER>";
+		case SYNTAX_CAR_TYPE_STRING:
+			return "<CAR STRING>";
+		case SYNTAX_CAR_TYPE_PRIMITIVE:
+			return "<CAR PRIMITIVE>";
+		case SYNTAX_CAR_TYPE_LAMBDA:
+			return "<CAR LAMBDA>";
+		default:
+			return "<CAR ???UNKNOWN???>";
+	}
+}
 
 /**
  * A small struct that represents a single node of an abstract syntax tree,
@@ -29,17 +55,7 @@
  * TODO: bundle the car and cdr together, since only non-atoms have a cdr
  *       and everything except SYNTAX_CAR_TYPE_SYNTAX_NODE is an atom.
  */
-struct _syntaxnode {
-	union {
-		struct _syntaxnode * car;
-		token * atom;
-		float floatValue;
-		char * stringValue;
-		char * identifier;
-	};
-	struct _syntaxnode * cdr;
-	int carType;
-} EMPTY_SYNTAX_NODE= {NULL,EMPTY_SYNTAX_NODE_CDR, SYNTAX_CAR_TYPE_EMPTY};
+struct _syntaxnode;
 
 typedef struct _syntaxnode syntaxnode;
 
@@ -49,9 +65,7 @@ typedef struct _syntaxnode syntaxnode;
  * This can be used to allocate a single value, or an array.
  * These syntaxnodes are not initialized.
  */
-syntaxnode * syntaxnodeAlloc(int num){
-	return (syntaxnode *) malloc( num * sizeof(syntaxnode));
-}
+syntaxnode * syntaxnodeAlloc(int num);
 
 /**
  * Returns true if the given syntax node is the empty syntax node nil.
@@ -59,43 +73,28 @@ syntaxnode * syntaxnodeAlloc(int num){
  *
  * Precondition: node is not NULL
  */
-int isEmptySyntaxNode(syntaxnode * node){
-	return node == NIL || node->carType == SYNTAX_CAR_TYPE_EMPTY;
-}
+int isEmptySyntaxNode(syntaxnode * node);
 
 /**
  * Initializes the given syntaxnode node to nil, the empty node.
  *
  * Precondition: node is not NULL
  */
-void initializeToEmptySyntaxNode(syntaxnode * node){
-	node->cdr = EMPTY_SYNTAX_NODE_CDR;
-	node->carType = SYNTAX_CAR_TYPE_EMPTY;
-}
+void initializeToEmptySyntaxNode(syntaxnode * node);
 
 /**
  * Allocates a single syntaxnode struct in heap memory,
  * initializes it to nil (the empty syntax node), and 
  * returns a pointer to it.
  */
-syntaxnode * emptySyntaxnodeAlloc(){
-	syntaxnode * node = syntaxnodeAlloc(1);
-	initializeToEmptySyntaxNode(node);
-	return node;
-}
+syntaxnode * emptySyntaxnodeAlloc();
 
 /**
  * Allocates and returns a single syntax node using malloc()
  * which is initialized as a non-leaf node of an asbtract syntax
  * tree, with the given car and cdr.
  */
-syntaxnode* allocSyntaxnodeFromCons(syntaxnode* car, syntaxnode* cdr){
-	syntaxnode* out = syntaxnodeAlloc(1);
-	out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
-	out->car = car;
-	out->cdr = cdr;
-	return out;
-}
+syntaxnode* allocSyntaxnodeFromCons(syntaxnode* car, syntaxnode* cdr);
 
 /**
  * Returns true if the given syntax node is an atom or not.
@@ -110,34 +109,12 @@ syntaxnode* allocSyntaxnodeFromCons(syntaxnode* car, syntaxnode* cdr){
  * in this source code as a syntax node with a carType field of
  * SYNTAX_CAR_TYPE_NUMBER and a value field of 5.
  */
-int isSyntaxNodeAnAtom(syntaxnode * n){
-	return n == NULL || n->carType != SYNTAX_CAR_TYPE_SYNTAX_NODE;
-}
+int isSyntaxNodeAnAtom(syntaxnode * n);
 
 /**
  * Prints out the value of the syntaxnode n, which is assumed to be an atom, to f.
  */
-fprintSyntaxnodeAtom(FILE * f, syntaxnode * n){
-	//Use a switch/case because of the enumerated car types like _TOKEN and _NUMBER
-	switch(n->carType){
-		case SYNTAX_CAR_TYPE_TOKEN:
-			fprintTokenText(f, *(n->atom));
-			break;
-		case SYNTAX_CAR_TYPE_NUMBER:
-			fprintf(f,"%f",n->floatValue);
-			break;
-		case SYNTAX_CAR_TYPE_STRING:
-			fprintf(f,"%s",n->stringValue);
-			break;
-		case SYNTAX_CAR_TYPE_IDENTIFIER:
-			fprintf(f,"%s",n->identifier);
-			break;
-		default:
-			fprintf(stderr, "%s\n", "Encountered syntaxnode atom with unexpected carType. Printing <Unexpected atom type>");
-			fprintf(f,"%s\n","<Unexpected atom type>");
-			break;
-	}
-}
+fprintSyntaxnodeAtom(FILE * f, syntaxnode * n);
 
 /**
  * Prints out a textual representation of the syntax subtree n to the FILE f
@@ -145,39 +122,8 @@ fprintSyntaxnodeAtom(FILE * f, syntaxnode * n){
  * TODO: add support for quoting
  * TODO: make it not print nil at the ends of sublists when quoting
  */
-void fprintSyntaxnode(FILE * f, syntaxnode * n){
-	if(n == NULL){
-		fprintf(f,"nil");
-		return;
-	}
-
-	if(isEmptySyntaxNode(n)){ //nil
-		//do nothing, assume end of list
-		fprintf(f,"nil");
-	} else if(isSyntaxNodeAnAtom(n)){
-		//just print its value
-		fprintSyntaxnodeAtom(f,n);
-	} else if(n->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE){
-		//print car
-		if(!isSyntaxNodeAnAtom(n->car))
-			fprintf(f,"(");
-		fprintSyntaxnode(f, n->car);
-		if(!isSyntaxNodeAnAtom(n->car))
-			fprintf(f,")");
-		//print cdr
-		if(n->cdr != NULL){
-			fprintf(f," "); /** delimit by spaces, just like the source code of the language,
-							 *  so that quoted trees end up on one line. */
-			fprintSyntaxnode(f, n->cdr);
-		}
-	} else {
-		fprintf(stderr, "%s\n", "Encountered syntaxnode non-atom of unexpected type. Printing <Unexpected non-atom type>");
-		fprintf(f,"%s\n","<Unexpected non-atom type>");
-	}
-}
+void fprintSyntaxnode(FILE * f, syntaxnode * n);
 
 
 
-void printSyntaxnode(syntaxnode * n){
-	fprintSyntaxnode(stdout, n);
-}
+void printSyntaxnode(syntaxnode * n);

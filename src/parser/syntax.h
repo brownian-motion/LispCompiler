@@ -1,6 +1,6 @@
 #pragma once
 #include "parser.c"
-#include "syntaxnode.h"
+#include "../types/syntaxnode.h"
 #include "parsenode.h"
 
 /**
