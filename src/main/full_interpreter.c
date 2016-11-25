@@ -13,9 +13,9 @@ int main(int argc, char* argv[]){
 		return errorcode;
 	}
 	puts("Successful parsing!");
-	#ifdef DO_PRINT_RESULT_PARSE_TREE
+	if(DO_PRINT_RESULT_PARSE_TREE){
 		printParseNode(program);
-	#endif
+	}
 
 	//Second, generate a syntax tree from the given parse tree
 	syntaxnode syntaxtree;
@@ -24,11 +24,11 @@ int main(int argc, char* argv[]){
 		return errorcode;
 	}
 	puts("\nSuccessful syntax tree generation!");
-	#ifdef DO_PRINT_RESULT_SYNTAX_TREE 
+	if(DO_PRINT_RESULT_SYNTAX_TREE ){
 		putc('\n', stdout);
 		printSyntaxnode(&syntaxtree); 
 		putc('\n', stdout);
-	#endif
+	}
 
 	//Finally, evaluate the syntax tree and print it out
 	//set up the environment

@@ -20,6 +20,7 @@ environmentNode* getDefaultEnvironment(){
 	initialEnvironment = definePrimitive(initialEnvironment, "quote", &quote);
 	initialEnvironment = definePrimitive(initialEnvironment, "cons", &cons);
 	initialEnvironment = definePrimitive(initialEnvironment, "print_list", &printListToStdout);
+	initialEnvironment = definePrimitive(initialEnvironment, "let", &let);
 
 	return initialEnvironment;
 }

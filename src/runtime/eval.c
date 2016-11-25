@@ -40,23 +40,29 @@ syntaxnode* lookupIdentifier(environmentNode* scope, syntaxnode* identifierNode)
 
 syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 	assert(listOfArguments != NULL); //todo: return nil?
-	// fprintf(stderr, "Evaluating the following list:");
-	// printListToStdout(environment, quote(environment, listOfArguments));
+	if(DO_PRINT_RUNTIME_TRACE){
+		fprintf(stderr, "Evaluating the following (%s): ",getSyntaxnodeCarTypeName(listOfArguments->carType));
+		printListToStdout(environment, quote(environment, listOfArguments));
+	}
 	switch(listOfArguments->carType){
 		case SYNTAX_CAR_TYPE_TOKEN:
 			//then look up the identifier
 			switch(listOfArguments->atom->type){
 				case TYPE_TOKEN_ID:
-				case TYPE_TOKEN_PLUS:
-				case TYPE_TOKEN_MINUS:
-					fprintf(stderr,"Looking up identifier %s\n",listOfArguments->atom->text);
+					if(DO_PRINT_RUNTIME_TRACE){
+						fprintf(stderr,"Looking up identifier %s\n",listOfArguments->atom->text);
+					}
 					return eval(environment, lookupIdentifier(environment, listOfArguments));
 				case TYPE_TOKEN_NUMBER:
-					fprintf(stderr,"Converting number %s to float\n",listOfArguments->atom->text);
+					if(DO_PRINT_RUNTIME_TRACE){
+						fprintf(stderr,"Converting number %s to float\n",listOfArguments->atom->text);
+					}
 					convertTokenToFloat(listOfArguments);
 					return listOfArguments;
 				default:
-					fprintf(stderr,"Encountered unexpected kind of token: %s %s\n", getTokenTypeName(listOfArguments->atom->type), listOfArguments->atom->text);
+					if(DO_PRINT_RUNTIME_TRACE){
+						fprintf(stderr,"Encountered unexpected kind of token: %s %s\n", getTokenTypeName(listOfArguments->atom->type), listOfArguments->atom->text);
+					}
 					assert(0);
 					return NULL;
 			}
@@ -67,14 +73,26 @@ syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 			return listOfArguments;
 		case SYNTAX_CAR_TYPE_SYNTAX_NODE:
 			//this is a list. Try to evaluate it as evaluating a lambda or evaluating a primitive
+			if(DO_PRINT_RUNTIME_TRACE)
+				fprintf(stderr, "Evaluating what to apply to the list...\n");
 			syntaxnode* whatToApply = eval(environment, car(environment, listOfArguments));
+			if(DO_PRINT_RUNTIME_TRACE)
+				fprintf(stderr, "Evaluating the body of the list...\n");
 			syntaxnode* whatToApplyItTo = cdr(environment, listOfArguments);
 			switch(whatToApply->carType){
 				case SYNTAX_CAR_TYPE_PRIMITIVE:
+					if(DO_PRINT_RUNTIME_TRACE)
+						fprintf(stderr,"Executing primitive...\n");
 					return (whatToApply->primitive)(environment,whatToApplyItTo);
 				default:
-					fprintf(stderr,"Encountered unexpected kind of syntax node at front of list: %s\nNode: ", getSyntaxnodeCarTypeName(listOfArguments->carType));
-					fprintSyntaxnode(stderr,listOfArguments);
+					if(DO_PRINT_RUNTIME_TRACE){
+						fprintf(stderr,"Encountered unexpected kind of syntax node at front of list: %s\n", getSyntaxnodeCarTypeName(listOfArguments->carType));
+						fprintf(stderr, "Applying ");
+						fprintSyntaxnode(stderr,whatToApply);
+						fprintf(stderr, " to ");
+						fprintSyntaxnode(stderr,whatToApplyItTo);
+						putc('\n',stderr);
+					}
 					assert(0);
 					return NULL;
 			}

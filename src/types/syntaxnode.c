@@ -131,13 +131,13 @@ fprintSyntaxnodeAtom(FILE * f, syntaxnode * n){
  */
 void fprintSyntaxnode(FILE * f, syntaxnode * n){
 	if(n == NULL){
-		fprintf(f,"nil");
+		// fprintf(f,"nil"); //do nothing.
 		return;
 	}
 
 	if(isEmptySyntaxNode(n)){ //nil
 		//do nothing, assume end of list
-		fprintf(f,"nil");
+		// fprintf(f,"nil");
 	} else if(isSyntaxNodeAnAtom(n)){
 		//just print its value
 		fprintSyntaxnodeAtom(f,n);

@@ -1,5 +1,7 @@
 #pragma once
 
+#define DO_PRINT_RUNTIME_TRACE 0
+
 #include "../util/string_util.h"
 #include "environment.h"
 

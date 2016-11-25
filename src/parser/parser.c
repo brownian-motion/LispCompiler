@@ -3,7 +3,7 @@
 
 #define DO_DEBUG_STACK 0
 #define DO_PRINT_PARSE_ERRORS 1
-#define DO_PRINT_RESULT_PARSE_TREE 1
+#define DO_PRINT_RESULT_PARSE_TREE 0
 
 /**
  * Generates a parse tree of the given source code file, assumed to represent a valid .jlisp file.
@@ -21,7 +21,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 	int numIterations = 0;
 
 	while(isEmpty(stack) || peek(&stack).type != TYPE_PROGRAM){
-		#ifdef DO_DEBUG_STACK
+		if(DO_DEBUG_STACK){
 			printf("#%3d: ",numIterations++);
 			if(isEmpty(stack)){
 				printf("<EMPTY STACK>");
@@ -32,20 +32,18 @@ int buildParseTree(FILE * file, struct parsenode * output){
 			}
 			printf(" Look ahead: ");
 			printTokenDebug(lookAhead);
-		#endif
+		}
 		int shouldReduceResult;
 		if(lookAhead->type == TYPE_TOKEN_ERROR){
-			#ifdef DO_PRINT_PARSE_ERRORS
+			if(DO_PRINT_PARSE_ERRORS)
 				printf("Parse error #%3d: Line #%3d, Col %3d: Invalid token encountered: \"%s\".\n", PARSE_ERROR_INVALID_TOKEN, lookAhead->lineNumber, lookAhead->colNumber, lookAhead->text);
-			#endif
 			return PARSE_ERROR_INVALID_TOKEN;
 		}
 		switch(shouldReduceResult = shouldReduce(stack, lookAhead)){
 			case 1:
 				//then reduce
-				#ifdef DO_DEBUG_STACK
+				if(DO_DEBUG_STACK)
 					printf(" (reducing)\n");
-				#endif
 				switch(peek(&stack).type){
 					case TYPE_ATOM:
 						struct parsenode atom = pop(&stack);
@@ -69,9 +67,9 @@ int buildParseTree(FILE * file, struct parsenode * output){
 						} else if(canMakeEFromAtom(atom)){
 							push(&stack, makeEFromAtom(atom));
 						} else {
-							#ifdef DO_PRINT_PARSE_ERRORS
+							if(DO_PRINT_PARSE_ERRORS){
 								fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Unexpected token %s.\n", PARSE_ERROR_SYNTAX_ERROR, atom.tokenPtr->lineNumber, atom.tokenPtr->colNumber, atom.tokenPtr->text);
-							#endif
+							}
 							return PARSE_ERROR_SYNTAX_ERROR;
 						} 
 						break;
@@ -89,46 +87,42 @@ int buildParseTree(FILE * file, struct parsenode * output){
 						else
 							push(&stack, makeEmptyEs());
 						break;
-						#ifdef DO_PRINT_PARSE_ERRORS
+						if(DO_PRINT_PARSE_ERRORS){
 							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a program parse node: ",PARSE_ERROR_PROGRAM_NODE_REDUCED, lookAhead->lineNumber, lookAhead->colNumber);
 							fprintParseNode(stderr,peek(&stack));
 							fprintf(stderr,"\n");
-						#endif
+						}
 						return PARSE_ERROR_PROGRAM_NODE_REDUCED;
 					default:
-						#ifdef DO_PRINT_PARSE_ERRORS
+						if(DO_PRINT_PARSE_ERRORS){
 							fprintf(stderr,"Parse error #%3d: Line %3d, Col %3d: Tried to reduce a parse node of unknown type: ",PARSE_ERROR_UNKNOWN_NODE_REDUCED, lookAhead->lineNumber, lookAhead->colNumber);
 							fprintParseNode(stderr, peek(&stack));
 							fprintf(stderr,"\n");
-						#endif
+						}
 						return PARSE_ERROR_UNKNOWN_NODE_REDUCED;
 				}
 				break;
 			case 0:
 				//then shift
-				#ifdef DO_DEBUG_STACK
+				if(DO_DEBUG_STACK)
 					printf(" (shifting)\n");
-				#endif
 				if(lookAhead->type == TYPE_TOKEN_EOF){
-					#ifdef DO_PRINT_PARSE_ERRORS
+					if(DO_PRINT_PARSE_ERRORS)
 						fprintf(stderr, "Parse error #%3d: Unexpected end of file.",PARSE_ERROR_EARLY_EOF);
-					#endif
 					return PARSE_ERROR_EARLY_EOF;
 				}
 				push(&stack,makeAtom(lookAhead)); //relinquishes control of the token to the atom
 				lookAhead = getNextToken(&fileTokenizer);
 				break;
 			default:
-				#ifdef DO_PRINT_PARSE_ERRORS
+				if(DO_PRINT_PARSE_ERRORS)
 					fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Syntax error :\"%s\"\n.",PARSE_ERROR_SYNTAX_ERROR, lookAhead->lineNumber, lookAhead->colNumber, lookAhead->text);
-				#endif
 				return PARSE_ERROR_SYNTAX_ERROR;
 		}
 	}
 	if(size(stack) != 1){
-		#ifdef DO_PRINT_PARSE_ERRORS
+		if(DO_PRINT_PARSE_ERRORS)
 			fprintf(stderr,"Parse error#%3d: Source could not be reduced to a complete program.",PARSE_ERROR_NON_EMPTY_STACK);
-		#endif
 		return PARSE_ERROR_NON_EMPTY_STACK;
 	}
 	*output = pop(&stack);

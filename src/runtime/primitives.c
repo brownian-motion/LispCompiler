@@ -54,25 +54,28 @@ syntaxnode* quote(environmentNode* environment, syntaxnode* listOfArguments){
 /**
  * Adds a definition to the scope of the body, then returns the same result as evaluating that body with that scope
  * usage:
- * (let ((var1 value1) [(var2 value2) ...] ) body)
+ * (let ((<key> <value>) ... ) <body>)
  **/
- /**
 syntaxnode* let(environmentNode* environment, syntaxnode* listOfArguments){
 	assert(listOfArguments != NULL);
-	environmentNode* newEnvironment = enviroment;
+	environmentNode* newEnvironment = environment;
+	assert(listOfArguments->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE);
 	syntaxnode* definitions = car(environment, listOfArguments);
-	while(definitions != NULL){
-		syntaxnode* definition = car(definition);
-		definitions = cdr(definitions);
+	while(definitions != NULL && !isEmptySyntaxNode(definitions)){
+		assert(definitions->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE);
+		syntaxnode* definition = car(environment, definitions);
+		definitions = cdr(environment, definitions);
+		assert (definition->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE);
+		syntaxnode* keyNode = car(environment, definition);
 
-		assert(definition->carType == SYNTAX_CAR_TYPE_TOKEN);
-		token key = definition->atom;
-		assert(key.type == TYPE_TOKEN_ID);
+		assert(keyNode->carType == SYNTAX_CAR_TYPE_TOKEN);
+		token* key = keyNode->atom;
+		assert(key->type == TYPE_TOKEN_ID);
 
-		newEnvironment = define(newEnvironment, key.text, cdr(environment, definition));
+		newEnvironment = define(newEnvironment, key->text, car(environment, cdr(environment, definition)));
 	}
 
-	syntaxnode * out = eval(newEnvironment, cdr(listOfArguments));
+	syntaxnode * out = eval(newEnvironment, car(newEnvironment, cdr(newEnvironment, listOfArguments)));
 
 	while(environment != newEnvironment){
 		newEnvironment = freeTopDefinition(newEnvironment);
@@ -80,7 +83,7 @@ syntaxnode* let(environmentNode* environment, syntaxnode* listOfArguments){
 
 	return out;
 }
-*/
+
 
 syntaxnode * plus(environmentNode* environment, syntaxnode* listOfArguments){
 	assert(listOfArguments != NULL);

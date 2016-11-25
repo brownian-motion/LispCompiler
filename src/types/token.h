@@ -120,14 +120,22 @@ void printTokenDebug(token * t){
 		printf("{token type:%s, line:%d, col:%d, text:\"%s\"}",getTokenTypeName(t->type), t->lineNumber, t->colNumber, t->text);
 }
 
+/**
+ * Returns true if c is considered the start of an identifier or operator.
+ * Any operator can bee looked up in the environment's symbol table, so 
+ * any operator character can also be considered the start of an id.
+ */
 int is_id_start(char c){
-	return isalpha(c) || (c == '_');
+	return isalpha(c) || (c == '_') || is_op_char(c);
 }
 
 int is_digit(char c){
 	return isdigit(c);
 }
 
+/**
+ * Returns true if c is considered part of the second (or further) characters of an identifier.
+ */
 int is_id(char c){
 	return is_id_start(c) || is_digit(c) || c=='?' || c=='!' || c=='-' || c=='<' || c=='>';
 }

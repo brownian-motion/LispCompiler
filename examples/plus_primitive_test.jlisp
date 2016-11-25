@@ -1,1 +1,10 @@
-(minus 1 2)
+(let (
+	(one 1)
+	(two (+ one one))
+	) 
+	(- 
+		(+ 1 4 two)
+		two
+		two
+		)
+	)

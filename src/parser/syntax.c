@@ -1,7 +1,7 @@
 #pragma once
 #include "syntax.h"
 
-#define DO_PRINT_RESULT_SYNTAX_TREE 1
+#define DO_PRINT_RESULT_SYNTAX_TREE 0
 
 int generateSyntaxTree(struct parsenode * parseTree, syntaxnode * syntaxTree){
 	if(parseTree == NULL){

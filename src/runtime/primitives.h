@@ -74,7 +74,7 @@ PRIMITIVE_FUNCTION plus;
  * Syntax: (let ((<key> <val>) ...) <body>)
  * Example usage: (let ((x 2) (y 3)) (+ x y)) -> 5
  */
-//PRIMITIVE_FUNCTION let;
+PRIMITIVE_FUNCTION let;
 
 /**
  * Creates a lambda expression that can be evaluated with a constant number of arguments.
