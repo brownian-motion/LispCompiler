@@ -75,10 +75,10 @@ syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 			//this is a list. Try to evaluate it as evaluating a lambda or evaluating a primitive
 			if(DO_PRINT_RUNTIME_TRACE)
 				fprintf(stderr, "Evaluating what to apply to the list...\n");
-			syntaxnode* whatToApply = eval(environment, car(environment, listOfArguments));
+			syntaxnode* whatToApply = eval(environment, _car(environment, listOfArguments));
 			if(DO_PRINT_RUNTIME_TRACE)
 				fprintf(stderr, "Evaluating the body of the list...\n");
-			syntaxnode* whatToApplyItTo = cdr(environment, listOfArguments);
+			syntaxnode* whatToApplyItTo = _cdr(environment, listOfArguments);
 			switch(whatToApply->carType){
 				case SYNTAX_CAR_TYPE_PRIMITIVE:
 					if(DO_PRINT_RUNTIME_TRACE)
@@ -96,6 +96,8 @@ syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 					assert(0);
 					return NULL;
 			}
+		case SYNTAX_CAR_TYPE_EMPTY:
+			return NIL;
 		default:
 			fprintf(stderr,"Encountered unexpected kind of syntax node: %s\nNode: ", getSyntaxnodeCarTypeName(listOfArguments->carType));
 			fprintSyntaxnode(stderr,listOfArguments);

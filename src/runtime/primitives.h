@@ -28,6 +28,7 @@ PRIMITIVE_FUNCTION printListToStdout;
  * Example usage: (car `(3 4 5)) -> 3
  */
 PRIMITIVE_FUNCTION car;
+PRIMITIVE_FUNCTION _car; //does this operation without evaluating its arguments first
 
 /**
  * Accepts a list, and returns the end of that list.
@@ -36,6 +37,7 @@ PRIMITIVE_FUNCTION car;
  * Example usage: (cdr `(3 4 5)) -> `(4 5)
  */
 PRIMITIVE_FUNCTION cdr;
+PRIMITIVE_FUNCTION _cdr; //does this operation without evaluating its arugments first
 
 /**
  * Accepts a value and a list, then appends the value to the front of the list

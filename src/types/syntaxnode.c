@@ -137,7 +137,7 @@ void fprintSyntaxnode(FILE * f, syntaxnode * n){
 
 	if(isEmptySyntaxNode(n)){ //nil
 		//do nothing, assume end of list
-		// fprintf(f,"nil");
+		fprintf(f,"nil");
 	} else if(isSyntaxNodeAnAtom(n)){
 		//just print its value
 		fprintSyntaxnodeAtom(f,n);
@@ -149,7 +149,7 @@ void fprintSyntaxnode(FILE * f, syntaxnode * n){
 		if(!isSyntaxNodeAnAtom(n->car))
 			fprintf(f,")");
 		//print cdr
-		if(n->cdr != NULL){
+		if(n->cdr != NULL && !isEmptySyntaxNode(n->cdr)){ //nil is the empty list, so it ends a list
 			fprintf(f," "); /** delimit by spaces, just like the source code of the language,
 							 *  so that quoted trees end up on one line. */
 			fprintSyntaxnode(f, n->cdr);

@@ -10,6 +10,7 @@
 
 environmentNode* getDefaultEnvironment(){
 	environmentNode* initialEnvironment = NULL;
+	initialEnvironment = define(initialEnvironment, "nil", NIL);
 	initialEnvironment = definePrimitive(initialEnvironment, "plus", &plus);
 	initialEnvironment = definePrimitive(initialEnvironment, "+", &plus);
 	initialEnvironment = definePrimitive(initialEnvironment, "minus", &minus);
@@ -19,7 +20,7 @@ environmentNode* getDefaultEnvironment(){
 	initialEnvironment = definePrimitive(initialEnvironment, "cdr", &cdr);
 	initialEnvironment = definePrimitive(initialEnvironment, "quote", &quote);
 	initialEnvironment = definePrimitive(initialEnvironment, "cons", &cons);
-	initialEnvironment = definePrimitive(initialEnvironment, "print_list", &printListToStdout);
+	initialEnvironment = definePrimitive(initialEnvironment, "print", &printListToStdout);
 	initialEnvironment = definePrimitive(initialEnvironment, "let", &let);
 
 	return initialEnvironment;
