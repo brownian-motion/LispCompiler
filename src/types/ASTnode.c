@@ -4,28 +4,6 @@
 #include <stdlib.h>
 
 /**
- * A small struct that represents a single node of an abstract syntax tree,
- * including both subtrees and atoms.
- * Whether this node is an atom or a subtree, and what sort of atom it is,
- * is determined by its carType.
- *
- * TODO: bundle the car and cdr together, since only non-atoms have a cdr
- *       and everything except SYNTAX_CAR_TYPE_SYNTAX_NODE is an atom.
- */
-struct AST_node_t {
-    union {
-        AST_node_t *car;
-        token_t *atom;
-        float floatValue;
-        char *stringValue;
-        char *identifier;
-        PRIMITIVE_FUNCTION *primitive;
-    };
-    AST_node_t *cdr;
-    carType_t carType;
-} EMPTY_SYNTAX_NODE = {NULL, EMPTY_SYNTAX_NODE_CDR, AST_NODE_CAR_TYPE_EMPTY};
-
-/**
  * Allocates a block of memory that can hold num syntaxnodes using malloc(),
  * and returns a pointer to the first one.
  * This can be used to allocate a single value, or an array.
@@ -41,7 +19,7 @@ AST_node_t *ASTNodeAlloc(int num) {
  *
  * Precondition: node is not NULL
  */
-int isNil(AST_node_t *node) {
+bool isNil(NILLABLE AST_node_t *node) {
     return node == NIL || node->carType == AST_NODE_CAR_TYPE_EMPTY;
 }
 

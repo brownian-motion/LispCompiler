@@ -2,6 +2,7 @@
 
 #include "token.h"
 #include "primitiveFunction.h"
+#include "../types/bool.h"
 #include "../util/annotations.h"
 
 #ifndef NULL
@@ -27,7 +28,7 @@ typedef enum {
 } carType_t;
 
 #define EMPTY_SYNTAX_NODE_CDR NULL
-#define NIL &EMPTY_SYNTAX_NODE
+#define NIL &AST_NODE_NIL
 
 char *getASTNodeCarTypeName(carType_t carType) {
     switch (carType) {
@@ -63,9 +64,31 @@ char *getASTNodeCarTypeName(carType_t carType) {
  * TODO: bundle the car and cdr together, since only non-atoms have a cdr
  *       and everything except SYNTAX_CAR_TYPE_SYNTAX_NODE is an atom.
  */
-struct AST_node_t;
-
-typedef struct AST_node_t AST_node_t;
+/**
+ * A small struct that represents a single node of an abstract syntax tree,
+ * including both subtrees and atoms.
+ * Whether this node is an atom or a subtree, and what sort of atom it is,
+ * is determined by its carType.
+ *
+ * TODO: bundle the car and cdr together, since only non-atoms have a cdr
+ *       and everything except SYNTAX_CAR_TYPE_SYNTAX_NODE is an atom.
+ */
+typedef struct AST_node_t {
+    union {
+        AST_node_t *car;
+        token_t *atom; // TODO: consider moving this outside the union, for bug reporting reasons
+        float floatValue;
+        char *stringValue;
+        char *identifier;
+        bool boolValue;
+        PRIMITIVE_FUNCTION *primitive;
+    };
+    AST_node_t *cdr;
+    carType_t carType;
+} AST_node_t;
+static const AST_node_t AST_NODE_NIL = {NULL, EMPTY_SYNTAX_NODE_CDR, AST_NODE_CAR_TYPE_EMPTY};
+static const AST_node_t AST_NODE_TRUE = {TRUE, EMPTY_SYNTAX_NODE_CDR, AST_NODE_CAR_TYPE_BOOLEAN};
+static const AST_node_t AST_NODE_FALSE = {FALSE, EMPTY_SYNTAX_NODE_CDR, AST_NODE_CAR_TYPE_BOOLEAN};
 
 /**
  * Allocates a block of memory that can hold num AST_node_t structs using malloc(),

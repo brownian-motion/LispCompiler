@@ -1,6 +1,7 @@
 #pragma once
 
 #include "primitives.h"
+#include "../util/annotations.h"
 
 AST_node_t* printListToStdout(environment_t * environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
@@ -34,7 +35,7 @@ AST_node_t* cdr(environment_t* environment, AST_node_t* listOfArguments){
 	return _cdr(environment, eval(environment,listOfArguments));
 }
 
-AST_node_t* _cdr(environment_t* environment, AST_node_t* listOfArguments){
+AST_node_t* _cdr(environment_t* environment, NOT_NULL AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
 	if(listOfArguments->cdr != NULL){
 		return listOfArguments->cdr;

@@ -14,7 +14,6 @@
 #define LIST
 #define NILLABLE
 #define NOT_NIL
-typedef int bool;
 #define BOOL_ATOM
 #define INT_ATOM
 #define STR_ATOM
