@@ -3,7 +3,7 @@
 #include "../parser/parser.c"
 
 int main(int argc, char* argv []){
-	struct parsenode program;
+	struct parsenode_t program;
 	if(buildParseTree(stdin, &program) == 0){
 		puts("Successful parsing!");
 		#ifdef DO_PRINT_RESULT_PARSE_TREE

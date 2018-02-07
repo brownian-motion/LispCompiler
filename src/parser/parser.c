@@ -14,13 +14,13 @@
  * because every token is unique (that is, each bit of text it represents is not stored twice).
  * When freeing the resources of the parse tree generated, these tokens must individually be freed.
  */
-int buildParseTree(FILE * file, struct parsenode * output){
+int buildParseTree(FILE * file, struct parsenode_t * output){
 	struct parseStack stack = makeParseStack();
 	tokenizer fileTokenizer = makeTokenizerFromFile(file); //stack allocated
 	token_t * lookAhead = getNextToken(&fileTokenizer); //never null, might represent EOF
 	int numIterations = 0;
 
-	while(isEmpty(stack) || peek(&stack).type != TYPE_PROGRAM){
+	while(isEmpty(stack) || peek(&stack).type != PARSENODE_TYPE_PROGRAM){
 		if(DO_DEBUG_STACK){
 			printf("#%3d: ",numIterations++);
 			if(isEmpty(stack)){
@@ -45,12 +45,12 @@ int buildParseTree(FILE * file, struct parsenode * output){
 				if(DO_DEBUG_STACK)
 					printf(" (reducing)\n");
 				switch(peek(&stack).type){
-					case TYPE_ATOM:
-						struct parsenode atom = pop(&stack);
+					case PARASENODE_TYPE_ATOM:
+						struct parsenode_t atom = pop(&stack);
 						if(atom.tokenPtr->type == TYPE_TOKEN_RPAREN && size(stack) >= 3){
-							struct parsenode es = pop(&stack);
-							struct parsenode e = pop(&stack);
-							struct parsenode lparen = pop(&stack);
+							struct parsenode_t es = pop(&stack);
+							struct parsenode_t e = pop(&stack);
+							struct parsenode_t lparen = pop(&stack);
 							if(canMakeEFromList(lparen,e,es,atom))
 								push(&stack, makeEFromList(lparen, e, es, atom));
 							else{
@@ -73,13 +73,13 @@ int buildParseTree(FILE * file, struct parsenode * output){
 							return PARSE_ERROR_SYNTAX_ERROR;
 						} 
 						break;
-					case TYPE_ES:
+					case PARSENODE_TYPE_ES:
 						//hit an rparen. Should make an ES from an E and ES
-						struct parsenode es = pop(&stack);
-						struct parsenode e = pop(&stack);
+						struct parsenode_t es = pop(&stack);
+						struct parsenode_t e = pop(&stack);
 						push(&stack, makeEsFromList(e, es));
 						break;
-					case TYPE_E:
+					case PARSENODE_TYPE_E:
 						//hit an rparen, and should make an empty ES,
 						//or hit end of file and should make program
 						if(lookAhead->type == TYPE_TOKEN_EOF)
@@ -111,7 +111,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 						fprintf(stderr, "Parse error #%3d: Unexpected end of file.",PARSE_ERROR_EARLY_EOF);
 					return PARSE_ERROR_EARLY_EOF;
 				}
-				push(&stack,makeAtom(lookAhead)); //relinquishes control of the token_t to the atom
+				push(&stack, makeAtomParseNodeFromToken(lookAhead)); //relinquishes control of the token_t to the atom
 				lookAhead = getNextToken(&fileTokenizer);
 				break;
 			default:
@@ -138,19 +138,19 @@ int shouldReduce(struct parseStack stack, token_t * lookAhead){
 	if(isEmpty(stack))
 		return 0;
 	switch(peek(&stack).type){
-		case TYPE_PROGRAM:
+		case PARSENODE_TYPE_PROGRAM:
 			fputs("Somehow tried to check if the parser should reduce an entire program.",stderr);
 			return 0;
-		case TYPE_E:
+		case PARSENODE_TYPE_E:
 			//If the upcoming token_t is a right parentheses, we need to reduce by putting an empty Es onto the stack and doing nothing else
 			//Otherwise, we need more tokens
 			return lookAhead->type == TYPE_TOKEN_RPAREN || lookAhead->type == TYPE_TOKEN_EOF;
-		case TYPE_ES:
+		case PARSENODE_TYPE_ES:
 			assert(lookAhead->type == TYPE_TOKEN_RPAREN);
 			//If the stack currently is ... atom(LPAREN) E Es, then we need to shift in order to get the right paren we need to reduce
 			//Otherwise, we don't need to reduce
-			return size(stack)>= 3 && (stack.top->next->next->data.type != TYPE_ATOM || stack.top->next->next->data.tokenPtr->type != TYPE_TOKEN_LPAREN);
-		case TYPE_ATOM:
+			return size(stack)>= 3 && (stack.top->next->next->data.type != PARASENODE_TYPE_ATOM || stack.top->next->next->data.tokenPtr->type != TYPE_TOKEN_LPAREN);
+		case PARASENODE_TYPE_ATOM:
 			//If this atom is a left parentheses, then we need more tokens
 			//If this atom is a right parentheses, then we need to reduce by the rule E -> ( E ES )
 			//If this atom is a number, then we need to reduce by the rule E->ATOM

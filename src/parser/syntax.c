@@ -1,23 +1,23 @@
 #pragma once
 #include "syntax.h"
 
-#define DO_PRINT_RESULT_SYNTAX_TREE 0
+#define DO_PRINT_RESULT_AST 0
 
-int generateSyntaxTree(struct parsenode * parseTree, AST_node_t * syntaxTree){
+int generateAST(struct parsenode_t *parseTree, AST_node_t *syntaxTree){
 	if(parseTree == NULL){
-		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered a null parsenode_t while generating syntax tree.");
 		return -4;
 	} else if(!parseTree->isValid){
-		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered an invalid parsenode_t while generating syntax tree.");
 		return -3;
-	} else if(parseTree->type != TYPE_PROGRAM){
+	} else if(parseTree->type != PARSENODE_TYPE_PROGRAM){
 		fprintf(stderr, "Expected an PROGRAM but encountered %s.", getNameOfParseNodeType(parseTree->type));
 		return -2;
 	} else if(parseTree->numChildren != 1){
 		fprintf(stderr, "Program node doesn't have exactly 1 child.");
 		return -1;
 	}
-	struct parsenode * e = &(parseTree->children[0]);
+	struct parsenode_t * e = &(parseTree->children[0]);
 	AST_node_t * root = makeSyntaxnodeFromE(e);
 	*syntaxTree = *root; //copy the data, not memory addresses
 	free(root); //because we copied the data into syntaxTree, we can free this memory space
@@ -31,14 +31,14 @@ int generateSyntaxTree(struct parsenode * parseTree, AST_node_t * syntaxTree){
  *
  * This function returns a pointer to a heap-allocated syntaxnode, or NULL if that fails.
  */
-AST_node_t * makeSyntaxnodeFromEs(struct parsenode * node){
+AST_node_t * makeSyntaxnodeFromEs(struct parsenode_t * node){
 	if(node == NULL){
-		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered a null parsenode_t while generating syntax tree.");
 		return NULL;
 	} else if(!node->isValid){
-		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered an invalid parsenode_t while generating syntax tree.");
 		return NULL;
-	} else if(node->type != TYPE_ES){
+	} else if(node->type != PARSENODE_TYPE_ES){
 		fprintf(stderr, "Expected an ES but encountered %s.", getNameOfParseNodeType(node->type));
 		return NULL;
 	}
@@ -49,13 +49,13 @@ AST_node_t * makeSyntaxnodeFromEs(struct parsenode * node){
 		case 2:
 			//This ES is the middle of a list. Return a syntax node with ES->E as car and ES->ES as cdr
 		{ //limits lexical scope of enclosed variables
-			struct parsenode e = node->children[0];
-			struct parsenode es = node->children[1];
-			if(e.type != TYPE_E){
+			struct parsenode_t e = node->children[0];
+			struct parsenode_t es = node->children[1];
+			if(e.type != PARSENODE_TYPE_E){
 				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
-			if(es.type != TYPE_ES){
+			if(es.type != PARSENODE_TYPE_ES){
 				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
@@ -76,14 +76,14 @@ AST_node_t * makeSyntaxnodeFromEs(struct parsenode * node){
 	}
 }
 
-AST_node_t * makeSyntaxnodeFromE(struct parsenode * node){
+AST_node_t * makeSyntaxnodeFromE(struct parsenode_t * node){
 	if(node == NULL){
-		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered a null parsenode_t while generating syntax tree.");
 		return NULL;
 	} else if(!node->isValid){
-		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered an invalid parsenode_t while generating syntax tree.");
 		return NULL;
-	} else if(node->type != TYPE_E){
+	} else if(node->type != PARSENODE_TYPE_E){
 		fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 		return NULL;
 	}
@@ -91,8 +91,8 @@ AST_node_t * makeSyntaxnodeFromE(struct parsenode * node){
 		case 1:
 			//this E is an atom. Return a syntax node made from this E's child.
 		{
-			struct parsenode atom = node->children[0];
-			if(atom.type != TYPE_ATOM){
+			struct parsenode_t atom = node->children[0];
+			if(atom.type != PARASENODE_TYPE_ATOM){
 				fprintf(stderr, "Expected an atom but encountered %s.", getNameOfParseNodeType(atom.type));
 				return NULL;
 			}
@@ -101,13 +101,13 @@ AST_node_t * makeSyntaxnodeFromE(struct parsenode * node){
 		case 2:
 			//This E is a list. Return a syntax node with ES->E as car and ES->ES as cdr
 		{ //limits lexical scope of enclosed variables
-			struct parsenode e = node->children[0];
-			struct parsenode es = node->children[1];
-			if(e.type != TYPE_E){
+			struct parsenode_t e = node->children[0];
+			struct parsenode_t es = node->children[1];
+			if(e.type != PARSENODE_TYPE_E){
 				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
-			if(es.type != TYPE_ES){
+			if(es.type != PARSENODE_TYPE_ES){
 				fprintf(stderr, "Expected an ES but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
@@ -125,21 +125,21 @@ AST_node_t * makeSyntaxnodeFromE(struct parsenode * node){
 	}
 }
 
-AST_node_t * makeSyntaxnodeFromAtom(struct parsenode * node){
+AST_node_t * makeSyntaxnodeFromAtom(struct parsenode_t * node){
 	if(node == NULL){
-		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered a null parsenode_t while generating syntax tree.");
 		return NULL;
 	} else if(!node->isValid){
-		fprintf(stderr, "Encountered an invalid parsenode while generating syntax tree.");
+		fprintf(stderr, "Encountered an invalid parsenode_t while generating syntax tree.");
 		return NULL;
-	} else if(node->type != TYPE_ATOM){
+	} else if(node->type != PARASENODE_TYPE_ATOM){
 		fprintf(stderr, "Expected an ATOM but encountered %s.", getNameOfParseNodeType(node->type));
 		return NULL;
 	} else if(node->numChildren != 0){
-		fprintf(stderr, "Expected a parsenode with just a token_t, got one with %d children.",node->numChildren);
+		fprintf(stderr, "Expected a parsenode_t with just a token_t, got one with %d children.",node->numChildren);
 		return NULL;
 	} else if(node->tokenPtr == NULL){
-		fprintf(stderr, "Expected a parsenode with a token_t when creating an atom, got none.");
+		fprintf(stderr, "Expected a parsenode_t with a token_t when creating an atom, got none.");
 	}
 	AST_node_t * out = emptyASTNodeAlloc();
 	out->atom = node->tokenPtr;

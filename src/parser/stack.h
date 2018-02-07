@@ -3,7 +3,7 @@
 #define DEFAULT_STACK_SIZE 10
 
 struct parseStackNode{
-	struct parsenode data;
+	struct parsenode_t data;
 	struct parseStackNode* next;
 };
 
@@ -24,22 +24,22 @@ int isEmpty(struct parseStack stack){
 	return stack.top == NULL;
 }
 
-void push(struct parseStack* stack, struct parsenode node){
+void push(struct parseStack* stack, struct parsenode_t node){
 	struct parseStackNode* next = stack->top;
 	stack->top = parseStackNodeAlloc();
 	stack->top->data = node;
 	stack->top->next = next;
 }
 
-struct parsenode pop(struct parseStack* stack){
-	struct parsenode out = stack->top->data;
+struct parsenode_t pop(struct parseStack* stack){
+	struct parsenode_t out = stack->top->data;
 	struct parseStackNode* next = stack->top->next;
 	free(stack->top);
 	stack->top=next;
 	return out;
 }
 
-struct parsenode peek(struct parseStack* stack){
+struct parsenode_t peek(struct parseStack* stack){
 	return stack->top->data;
 }
 
