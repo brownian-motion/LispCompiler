@@ -14,7 +14,7 @@
  */
 //These aren't static const int because they won't work in switch/case
 typedef enum {
-    SYNTAX_CAR_TYPE_EMPTY,
+    SYNTAX_CAR_TYPE_EMPTY, //nil
     SYNTAX_CAR_TYPE_TOKEN,
     SYNTAX_CAR_TYPE_SYNTAX_NODE,
     //The following three (_D, _NUMBER, and _STRING) are not yet implemented:
@@ -22,13 +22,14 @@ typedef enum {
     SYNTAX_CAR_TYPE_NUMBER,
     SYNTAX_CAR_TYPE_STRING,
     SYNTAX_CAR_TYPE_PRIMITIVE,
-    SYNTAX_CAR_TYPE_LAMBDA
+    SYNTAX_CAR_TYPE_LAMBDA,
+    SYNTAX_CAR_TYPE_BOOLEAN
 } carType_t;
 
 #define EMPTY_SYNTAX_NODE_CDR NULL
 #define NIL &EMPTY_SYNTAX_NODE
 
-char *getSyntaxnodeCarTypeName(carType_t carType) {
+char *getASTNodeCarTypeName(carType_t carType) {
     switch (carType) {
         case SYNTAX_CAR_TYPE_EMPTY:
             return "<CAR EMPTY>";
@@ -46,6 +47,8 @@ char *getSyntaxnodeCarTypeName(carType_t carType) {
             return "<CAR PRIMITIVE>";
         case SYNTAX_CAR_TYPE_LAMBDA:
             return "<CAR LAMBDA>";
+        case SYNTAX_CAR_TYPE_BOOLEAN:
+            return "<CAR BOOLEAN>";
         default:
             return "<CAR ???UNKNOWN???>";
     }

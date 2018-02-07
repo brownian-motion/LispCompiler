@@ -42,7 +42,7 @@ AST_node_t* lookupIdentifier(environment_t* scope, AST_node_t* identifierNode){
 AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL); //todo: return nil?
 	if(DO_PRINT_RUNTIME_TRACE){
-		fprintf(stderr, "Evaluating the following (%s): ",getSyntaxnodeCarTypeName(listOfArguments->carType));
+		fprintf(stderr, "Evaluating the following (%s): ", getASTNodeCarTypeName(listOfArguments->carType));
 		printListToStdout(environment, quote(environment, listOfArguments));
 	}
 	switch(listOfArguments->carType){
@@ -87,7 +87,8 @@ AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 					return (whatToApply->primitive)(environment,whatToApplyItTo);
 				default:
 					if(DO_PRINT_RUNTIME_TRACE){
-						fprintf(stderr,"Encountered unexpected kind of syntax node at front of list: %s\n", getSyntaxnodeCarTypeName(listOfArguments->carType));
+						fprintf(stderr,"Encountered unexpected kind of syntax node at front of list: %s\n",
+								getASTNodeCarTypeName(listOfArguments->carType));
 						fprintf(stderr, "Applying ");
                         fprintAST(stderr, whatToApply);
 						fprintf(stderr, " to ");
@@ -100,7 +101,8 @@ AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 		case SYNTAX_CAR_TYPE_EMPTY:
 			return NIL;
 		default:
-			fprintf(stderr,"Encountered unexpected kind of syntax node: %s\nNode: ", getSyntaxnodeCarTypeName(listOfArguments->carType));
+			fprintf(stderr,"Encountered unexpected kind of syntax node: %s\nNode: ",
+					getASTNodeCarTypeName(listOfArguments->carType));
             fprintAST(stderr, listOfArguments);
 			assert(0);
 			return NULL;
