@@ -65,7 +65,7 @@ AST_node_t * makeSyntaxnodeFromEs(struct parsenode * node){
 			if(out == NULL){
 				fprintf(stderr,"Error generating first child of an ES");
 			}
-			out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
+			out->carType = AST_NODE_CAR_TYPE_AST_NODE;
 			out->car = car;
 			out->cdr = cdr;
 			return out;
@@ -114,7 +114,7 @@ AST_node_t * makeSyntaxnodeFromE(struct parsenode * node){
 			AST_node_t* out = emptyASTNodeAlloc();
 			AST_node_t* car = makeSyntaxnodeFromE(&e);
 			AST_node_t* cdr = makeSyntaxnodeFromEs(&es);
-			out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
+			out->carType = AST_NODE_CAR_TYPE_AST_NODE;
 			out->cdr = cdr;
 			out->car = car;
 			return out;
@@ -143,6 +143,6 @@ AST_node_t * makeSyntaxnodeFromAtom(struct parsenode * node){
 	}
 	AST_node_t * out = emptyASTNodeAlloc();
 	out->atom = node->tokenPtr;
-	out->carType = SYNTAX_CAR_TYPE_TOKEN;
+	out->carType = AST_NODE_CAR_TYPE_TOKEN;
 	return out;
 }

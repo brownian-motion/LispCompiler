@@ -97,13 +97,13 @@ void evaluateTokenType(AST_node_t* atomWithUnresolvedToken){
 	token_t t = *atomWithUnresolvedToken->atom;
 	//free(atomWithUnresolvedToken->atom);
 	if(is_float(t.text)){
-		atomWithUnresolvedToken->carType = SYNTAX_CAR_TYPE_NUMBER;
+		atomWithUnresolvedToken->carType = AST_NODE_CAR_TYPE_NUMBER;
 		atomWithUnresolvedToken->floatValue = strtod(t.text,NULL);
 	} else if(is_string(t.text)){
-		atomWithUnresolvedToken->carType = SYNTAX_CAR_TYPE_STRING;
+		atomWithUnresolvedToken->carType = AST_NODE_CAR_TYPE_STRING;
 		atomWithUnresolvedToken->stringValue = t.text;
 	} else {
-		atomWithUnresolvedToken->carType = SYNTAX_CAR_TYPE_IDENTIFIER;
+		atomWithUnresolvedToken->carType = AST_NODE_CAR_TYPE_IDENTIFIER;
 		atomWithUnresolvedToken->identifier = t.text;
 	}
 }

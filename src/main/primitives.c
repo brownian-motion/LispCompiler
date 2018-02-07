@@ -6,15 +6,15 @@ int main(){
 	//nothing. just wanted to test these included files
 	environment_t * environment = definePrimitive(NULL, "plus", &plus);
 	AST_node_t* plusNode = emptyASTNodeAlloc();
-	plusNode->carType = SYNTAX_CAR_TYPE_TOKEN;
+	plusNode->carType = AST_NODE_CAR_TYPE_TOKEN;
 	plusNode->atom = allocAndInitializeToken(TYPE_TOKEN_ID, -1, -1, "plus");
 
 	AST_node_t* one = emptyASTNodeAlloc();
-	one->carType = SYNTAX_CAR_TYPE_TOKEN;
+	one->carType = AST_NODE_CAR_TYPE_TOKEN;
 	one->atom = allocAndInitializeToken(TYPE_TOKEN_NUMBER, -1, -1, "1");
 	// one = eval(NULL, one);
 	AST_node_t* two = emptyASTNodeAlloc();
-	two->carType = SYNTAX_CAR_TYPE_TOKEN;
+	two->carType = AST_NODE_CAR_TYPE_TOKEN;
 	two->atom = allocAndInitializeToken(TYPE_TOKEN_NUMBER, -1, -1, "2");
 	// two = eval(NULL, two);
 	AST_node_t* listOfTwo = allocASTNodeFromCons(one,

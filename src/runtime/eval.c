@@ -4,25 +4,25 @@
 #include "primitives.h"
 
 void convertTokenToFloat(AST_node_t* atomNode){
-	assert(atomNode->carType == SYNTAX_CAR_TYPE_TOKEN
+	assert(atomNode->carType == AST_NODE_CAR_TYPE_TOKEN
 		&& atomNode->atom->type == TYPE_TOKEN_NUMBER);
-	atomNode->carType = SYNTAX_CAR_TYPE_NUMBER;
+	atomNode->carType = AST_NODE_CAR_TYPE_NUMBER;
 	char* floatText = atomNode->atom->text;
 	free(atomNode->atom); //no longer need this token_t, since we can safely replace it for all syntax nodes with its value
 	atomNode->floatValue = parseFloat(floatText);
 }
 
 void convertTokenToPrimitive(AST_node_t* primitiveNode, PRIMITIVE_FUNCTION* primitive){
-	assert(primitiveNode->carType == SYNTAX_CAR_TYPE_TOKEN
+	assert(primitiveNode->carType == AST_NODE_CAR_TYPE_TOKEN
 		&& primitiveNode->atom->type == TYPE_TOKEN_ID);
 	free(primitiveNode->atom); //no longer need this token_t, since we can safely replace it for all syntax nodes with its value
-	primitiveNode->carType = SYNTAX_CAR_TYPE_PRIMITIVE;
+	primitiveNode->carType = AST_NODE_CAR_TYPE_PRIMITIVE;
 	primitiveNode->primitive = primitive;
 }
 
 AST_node_t* lookupIdentifier(environment_t* scope, AST_node_t* identifierNode){
 	assert(identifierNode != NULL 
-		&& identifierNode->carType == SYNTAX_CAR_TYPE_TOKEN 
+		&& identifierNode->carType == AST_NODE_CAR_TYPE_TOKEN
 		&& identifierNode->atom->type == TYPE_TOKEN_ID);
 	char* identifier = identifierNode->atom->text;
 	assert(isDefined(scope, identifier));
@@ -46,7 +46,7 @@ AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 		printListToStdout(environment, quote(environment, listOfArguments));
 	}
 	switch(listOfArguments->carType){
-		case SYNTAX_CAR_TYPE_TOKEN:
+		case AST_NODE_CAR_TYPE_TOKEN:
 			//then look up the identifier
 			switch(listOfArguments->atom->type){
 				case TYPE_TOKEN_ID:
@@ -68,11 +68,11 @@ AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 					return NULL;
 			}
 		//The following series are atomic types that evaluate to themselves:
-		case SYNTAX_CAR_TYPE_NUMBER:
-		case SYNTAX_CAR_TYPE_PRIMITIVE:
-		case SYNTAX_CAR_TYPE_LAMBDA:
+		case AST_NODE_CAR_TYPE_NUMBER:
+		case AST_NODE_CAR_TYPE_PRIMITIVE:
+		case AST_NODE_CAR_TYPE_LAMBDA:
 			return listOfArguments;
-		case SYNTAX_CAR_TYPE_SYNTAX_NODE:
+		case AST_NODE_CAR_TYPE_AST_NODE:
 			//this is a list. Try to evaluate it as evaluating a lambda or evaluating a primitive
 			if(DO_PRINT_RUNTIME_TRACE)
 				fprintf(stderr, "Evaluating what to apply to the list...\n");
@@ -81,7 +81,7 @@ AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 				fprintf(stderr, "Evaluating the body of the list...\n");
 			AST_node_t* whatToApplyItTo = _cdr(environment, listOfArguments);
 			switch(whatToApply->carType){
-				case SYNTAX_CAR_TYPE_PRIMITIVE:
+				case AST_NODE_CAR_TYPE_PRIMITIVE:
 					if(DO_PRINT_RUNTIME_TRACE)
 						fprintf(stderr,"Executing primitive...\n");
 					return (whatToApply->primitive)(environment,whatToApplyItTo);
@@ -98,7 +98,7 @@ AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 					assert(0);
 					return NULL;
 			}
-		case SYNTAX_CAR_TYPE_EMPTY:
+		case AST_NODE_CAR_TYPE_EMPTY:
 			return NIL;
 		default:
 			fprintf(stderr,"Encountered unexpected kind of syntax node: %s\nNode: ",

@@ -14,16 +14,16 @@
  */
 //These aren't static const int because they won't work in switch/case
 typedef enum {
-    SYNTAX_CAR_TYPE_EMPTY, //nil
-    SYNTAX_CAR_TYPE_TOKEN,
-    SYNTAX_CAR_TYPE_SYNTAX_NODE,
+    AST_NODE_CAR_TYPE_EMPTY, //nil
+    AST_NODE_CAR_TYPE_TOKEN,
+    AST_NODE_CAR_TYPE_AST_NODE,
     //The following three (_D, _NUMBER, and _STRING) are not yet implemented:
-    SYNTAX_CAR_TYPE_IDENTIFIER,
-    SYNTAX_CAR_TYPE_NUMBER,
-    SYNTAX_CAR_TYPE_STRING,
-    SYNTAX_CAR_TYPE_PRIMITIVE,
-    SYNTAX_CAR_TYPE_LAMBDA,
-    SYNTAX_CAR_TYPE_BOOLEAN
+    AST_NODE_CAR_TYPE_IDENTIFIER,
+    AST_NODE_CAR_TYPE_NUMBER,
+    AST_NODE_CAR_TYPE_STRING,
+    AST_NODE_CAR_TYPE_PRIMITIVE,
+    AST_NODE_CAR_TYPE_LAMBDA,
+    AST_NODE_CAR_TYPE_BOOLEAN
 } carType_t;
 
 #define EMPTY_SYNTAX_NODE_CDR NULL
@@ -31,23 +31,23 @@ typedef enum {
 
 char *getASTNodeCarTypeName(carType_t carType) {
     switch (carType) {
-        case SYNTAX_CAR_TYPE_EMPTY:
+        case AST_NODE_CAR_TYPE_EMPTY:
             return "<CAR EMPTY>";
-        case SYNTAX_CAR_TYPE_TOKEN:
+        case AST_NODE_CAR_TYPE_TOKEN:
             return "<CAR TOKEN>";
-        case SYNTAX_CAR_TYPE_SYNTAX_NODE:
-            return "<CAR SYNTAXNODE>";
-        case SYNTAX_CAR_TYPE_IDENTIFIER:
+        case AST_NODE_CAR_TYPE_AST_NODE:
+            return "<CAR AST_NODE>";
+        case AST_NODE_CAR_TYPE_IDENTIFIER:
             return "<CAR IDENTIFIER>";
-        case SYNTAX_CAR_TYPE_NUMBER:
+        case AST_NODE_CAR_TYPE_NUMBER:
             return "<CAR NUMBER>";
-        case SYNTAX_CAR_TYPE_STRING:
+        case AST_NODE_CAR_TYPE_STRING:
             return "<CAR STRING>";
-        case SYNTAX_CAR_TYPE_PRIMITIVE:
+        case AST_NODE_CAR_TYPE_PRIMITIVE:
             return "<CAR PRIMITIVE>";
-        case SYNTAX_CAR_TYPE_LAMBDA:
+        case AST_NODE_CAR_TYPE_LAMBDA:
             return "<CAR LAMBDA>";
-        case SYNTAX_CAR_TYPE_BOOLEAN:
+        case AST_NODE_CAR_TYPE_BOOLEAN:
             return "<CAR BOOLEAN>";
         default:
             return "<CAR ???UNKNOWN???>";

@@ -23,7 +23,7 @@ struct AST_node_t {
     };
     AST_node_t *cdr;
     carType_t carType;
-} EMPTY_SYNTAX_NODE = {NULL, EMPTY_SYNTAX_NODE_CDR, SYNTAX_CAR_TYPE_EMPTY};
+} EMPTY_SYNTAX_NODE = {NULL, EMPTY_SYNTAX_NODE_CDR, AST_NODE_CAR_TYPE_EMPTY};
 
 /**
  * Allocates a block of memory that can hold num syntaxnodes using malloc(),
@@ -42,7 +42,7 @@ AST_node_t *ASTNodeAlloc(int num) {
  * Precondition: node is not NULL
  */
 int isNil(AST_node_t *node) {
-    return node == NIL || node->carType == SYNTAX_CAR_TYPE_EMPTY;
+    return node == NIL || node->carType == AST_NODE_CAR_TYPE_EMPTY;
 }
 
 /**
@@ -52,7 +52,7 @@ int isNil(AST_node_t *node) {
  */
 void initializeToEmptySyntaxNode(NOT_NULL AST_node_t *node) {
     node->cdr = EMPTY_SYNTAX_NODE_CDR;
-    node->carType = SYNTAX_CAR_TYPE_EMPTY;
+    node->carType = AST_NODE_CAR_TYPE_EMPTY;
 }
 
 /**
@@ -73,7 +73,7 @@ AST_node_t *emptyASTNodeAlloc() {
  */
 LIST AST_node_t *allocASTNodeFromCons(NILLABLE AST_node_t *car, NILLABLE AST_node_t *cdr) {
     AST_node_t *out = ASTNodeAlloc(1);
-    out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
+    out->carType = AST_NODE_CAR_TYPE_AST_NODE;
     out->car = car;
     out->cdr = cdr;
     return out;
@@ -93,7 +93,7 @@ LIST AST_node_t *allocASTNodeFromCons(NILLABLE AST_node_t *car, NILLABLE AST_nod
  * SYNTAX_CAR_TYPE_NUMBER and a value field of 5.
  */
 bool isASTNodeAnAtom(AST_node_t *n) {
-    return n == NULL || n->carType != SYNTAX_CAR_TYPE_SYNTAX_NODE;
+    return n == NULL || n->carType != AST_NODE_CAR_TYPE_AST_NODE;
 }
 
 /**
@@ -102,19 +102,19 @@ bool isASTNodeAnAtom(AST_node_t *n) {
 void fprintAtom(FILE *f, ATOM AST_node_t *n) {
 //Use a switch/case because of the enumerated car types like _TOKEN and _NUMBER
     switch (n->carType) {
-        case SYNTAX_CAR_TYPE_TOKEN:
+        case AST_NODE_CAR_TYPE_TOKEN:
             fprintTokenText(f, *(n->atom));
             break;
-        case SYNTAX_CAR_TYPE_NUMBER:
+        case AST_NODE_CAR_TYPE_NUMBER:
             fprintf(f, "%f", n->floatValue);
             break;
-        case SYNTAX_CAR_TYPE_STRING:
+        case AST_NODE_CAR_TYPE_STRING:
             fprintf(f, "%s", n->stringValue);
             break;
-        case SYNTAX_CAR_TYPE_IDENTIFIER:
+        case AST_NODE_CAR_TYPE_IDENTIFIER:
             fprintf(f, "%s", n->identifier);
             break;
-        case SYNTAX_CAR_TYPE_PRIMITIVE:
+        case AST_NODE_CAR_TYPE_PRIMITIVE:
             fprintf(f, "<# procedure>");
             break;
         default:
@@ -143,7 +143,7 @@ void fprintAST(FILE *f, NILLABLE AST_node_t *n) {
     } else if (isASTNodeAnAtom(n)) {
         //just print its value
         fprintAtom(f, n);
-    } else if (n->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE) {
+    } else if (n->carType == AST_NODE_CAR_TYPE_AST_NODE) {
         //print car
         if (!isASTNodeAnAtom(n->car))
             fprintf(f, "(");
