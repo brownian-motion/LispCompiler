@@ -95,7 +95,7 @@ void initializeToEmptySyntaxNode(NOT_NULL AST_node_t *node);
  * initializes it to nil (the empty syntax node), and 
  * returns a pointer to it.
  */
-AST_node_t *emptySyntaxnodeAlloc();
+AST_node_t *emptyASTNodeAlloc();
 
 /**
  * Allocates and returns a single syntax node using malloc()

@@ -45,7 +45,7 @@ AST_node_t * makeSyntaxnodeFromEs(struct parsenode * node){
 	switch(node->numChildren){
 		case 0:
 			//this ES is the end of a list. Return an empty syntax node.
-			return emptySyntaxnodeAlloc();
+			return emptyASTNodeAlloc();
 		case 2:
 			//This ES is the middle of a list. Return a syntax node with ES->E as car and ES->ES as cdr
 		{ //limits lexical scope of enclosed variables
@@ -59,7 +59,7 @@ AST_node_t * makeSyntaxnodeFromEs(struct parsenode * node){
 				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
-			AST_node_t* out = emptySyntaxnodeAlloc();
+			AST_node_t* out = emptyASTNodeAlloc();
 			AST_node_t* car = makeSyntaxnodeFromE(&e);
 			AST_node_t* cdr = makeSyntaxnodeFromEs(&es); //overwrites what was there?
 			if(out == NULL){
@@ -111,7 +111,7 @@ AST_node_t * makeSyntaxnodeFromE(struct parsenode * node){
 				fprintf(stderr, "Expected an ES but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
-			AST_node_t* out = emptySyntaxnodeAlloc();
+			AST_node_t* out = emptyASTNodeAlloc();
 			AST_node_t* car = makeSyntaxnodeFromE(&e);
 			AST_node_t* cdr = makeSyntaxnodeFromEs(&es);
 			out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
@@ -141,7 +141,7 @@ AST_node_t * makeSyntaxnodeFromAtom(struct parsenode * node){
 	} else if(node->tokenPtr == NULL){
 		fprintf(stderr, "Expected a parsenode with a token_t when creating an atom, got none.");
 	}
-	AST_node_t * out = emptySyntaxnodeAlloc();
+	AST_node_t * out = emptyASTNodeAlloc();
 	out->atom = node->tokenPtr;
 	out->carType = SYNTAX_CAR_TYPE_TOKEN;
 	return out;

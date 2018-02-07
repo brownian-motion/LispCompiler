@@ -106,7 +106,7 @@ AST_node_t * plus(environment_t* environment, AST_node_t* listOfArguments){
 		sum += addend->floatValue;
 		listOfArguments = _cdr(environment, listOfArguments);
 	}
-	AST_node_t* result = emptySyntaxnodeAlloc();
+	AST_node_t* result = emptyASTNodeAlloc();
 	result->carType = SYNTAX_CAR_TYPE_NUMBER;
 	result->floatValue = sum;
 	return result;
@@ -121,7 +121,7 @@ AST_node_t * minus(environment_t* environment, AST_node_t* listOfArguments){
 	
 	AST_node_t* subtends = _cdr(environment, listOfArguments);
 
-	AST_node_t* result = emptySyntaxnodeAlloc();
+	AST_node_t* result = emptyASTNodeAlloc();
 	result->carType = SYNTAX_CAR_TYPE_NUMBER;
 	if(subtends == NULL || isNil(subtends)){
 		result->floatValue = -addend->floatValue;

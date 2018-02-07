@@ -60,7 +60,7 @@ void initializeToEmptySyntaxNode(AST_node_t *node) {
  * initializes it to nil (the empty syntax node), and 
  * returns a pointer to it.
  */
-AST_node_t *emptySyntaxnodeAlloc() {
+AST_node_t *emptyASTNodeAlloc() {
     AST_node_t *node = ASTNodeAlloc(1);
     initializeToEmptySyntaxNode(node);
     return node;
