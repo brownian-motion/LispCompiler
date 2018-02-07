@@ -1,7 +1,7 @@
 #pragma once
 
 #include <assert.h>
-#include "../types/syntaxnode.h"
+#include "../types/ASTnode.h"
 #include "../types/primitiveFunction.h"
 #include "environment.h"
 #include "eval.h"

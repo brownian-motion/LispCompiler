@@ -1,5 +1,5 @@
 #pragma once
-#include "../types/syntaxnode.c"
+#include "../types/ASTnode.c"
 #include "../types/primitiveFunction.h"
 #include "../types/environmentNode.h"
 

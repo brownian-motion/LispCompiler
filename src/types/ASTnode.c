@@ -1,6 +1,6 @@
 #pragma once
 
-#include "syntaxnode.h"
+#include "ASTnode.h"
 #include <stdlib.h>
 
 /**
@@ -50,7 +50,7 @@ int isNil(AST_node_t *node) {
  *
  * Precondition: node is not NULL
  */
-void initializeToEmptySyntaxNode(AST_node_t *node) {
+void initializeToEmptySyntaxNode(NOT_NULL AST_node_t *node) {
     node->cdr = EMPTY_SYNTAX_NODE_CDR;
     node->carType = SYNTAX_CAR_TYPE_EMPTY;
 }

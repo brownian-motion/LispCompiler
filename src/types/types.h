@@ -1,8 +1,8 @@
 #pragma once
 
-#include "syntaxnode.h"
+#include "ASTnode.h"
 #include "primitiveFunction.h"
 #include "environmentNode.h"
 #include "token.h"
 
-#include "syntaxnode.c"
+#include "ASTnode.c"
