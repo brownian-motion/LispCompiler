@@ -18,7 +18,7 @@ int main(int argc, char* argv[]){
 	}
 
 	//Second, generate a syntax tree from the given parse tree
-	syntaxnode syntaxtree;
+	AST_node_t syntaxtree;
 	if((errorcode = generateSyntaxTree(&program, &syntaxtree)) != 0){
 		puts("Error while generating syntax tree.");
 		return errorcode;
@@ -26,17 +26,17 @@ int main(int argc, char* argv[]){
 	puts("\nSuccessful syntax tree generation!");
 	if(DO_PRINT_RESULT_SYNTAX_TREE ){
 		putc('\n', stdout);
-		printSyntaxnode(&syntaxtree); 
+        printAST(&syntaxtree);
 		putc('\n', stdout);
 	}
 
 	//Finally, evaluate the syntax tree and print it out
 	//set up the environment
-	environmentNode* initialEnvironment = getDefaultEnvironment();
+	environment_t* initialEnvironment = getDefaultEnvironment();
 
-	syntaxnode* evaluatedProgram = eval(initialEnvironment, &syntaxtree);
+	AST_node_t* evaluatedProgram = eval(initialEnvironment, &syntaxtree);
 	puts("\nSuccessful program evaluation!\n\tResult: ");
-	printSyntaxnode(evaluatedProgram);
+    printAST(evaluatedProgram);
 
 	return errorcode;
 }

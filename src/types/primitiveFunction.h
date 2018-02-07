@@ -1,9 +1,9 @@
 #pragma once
 
-struct _syntaxnode;
-typedef struct _syntaxnode syntaxnode;
+struct AST_node_t;
+typedef struct AST_node_t AST_node_t;
 
 struct _environmentNode;
-typedef struct _environmentNode environmentNode;
+typedef struct _environmentNode environment_t;
 
-typedef syntaxnode* (PRIMITIVE_FUNCTION)(environmentNode*, syntaxnode*);
+typedef AST_node_t* (PRIMITIVE_FUNCTION)(environment_t*, AST_node_t*);

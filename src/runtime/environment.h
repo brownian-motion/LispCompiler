@@ -16,20 +16,20 @@
 struct _environmentNode {
 	char * identifier;
 	union {
-		syntaxnode* ast;
+		AST_node_t* ast;
 		PRIMITIVE_FUNCTION* primitive; 	//a primitive is a C function that takes in an enironment and an AST and gives back an AST
 	};
 	const struct _environmentNode * next;
 	int nodeType; //either ENVIRONMENT_NODE_TYPE_AST or ENVIRONMENT_NODE_TYPE_PRIMITIVE
 };
 
-typedef struct _environmentNode environmentNode;
+typedef struct _environmentNode environment_t;
 
 /**
  * Iterates through the given environment to see if the given identifier has a definition.
  * Returns true if a definition exists, and false otherwise.
  */
-int isDefined(const environmentNode * environment, char * identifier);
+int isDefined(const environment_t * environment, char * identifier);
 
 /**
  * Iterates through the given environment to see if the given identifier 'key' has a definition.
@@ -40,18 +40,18 @@ int isDefined(const environmentNode * environment, char * identifier);
  * that existed AT or BEFORE that scope's creation...
  * which is what is returned by this function.
  */
-const environmentNode * findDefinitionForIdentifier(const environmentNode * environment, char * identifier);
+const environment_t * findDefinitionForIdentifier(const environment_t * environment, char * identifier);
 
 /** 
  * Allocates using malloc() a block of memory big enough to hold num environmentNodes.
  * Returns a pointer to that block.
  */
-environmentNode * allocEnvironmentNode(int num);
+environment_t * allocEnvironmentNode(int num);
 
 /**
  * Allocates and initializes a single empty environmentNode that points to NULL.
  */
-environmentNode * allocInitializedEmptyEnvironmentNode();
+environment_t * allocInitializedEmptyEnvironmentNode();
 
 /**
  * Overwrites the provided environmentNode* to the given [identifier => ast] definition
@@ -61,7 +61,7 @@ environmentNode * allocInitializedEmptyEnvironmentNode();
  *
  * Precondition: definitionToOverwrite is not NULL
  */
-void overwriteNodeDefinitionToAST(environmentNode * definitionToOverwrite, char * identifier, syntaxnode * ast);
+void overwriteNodeDefinitionToAST(environment_t * definitionToOverwrite, char * identifier, AST_node_t * ast);
 
 /**
  * Overwrites the provided environmentNode* to the given [identifier => primitive] definition
@@ -75,19 +75,19 @@ void overwriteNodeDefinitionToAST(environmentNode * definitionToOverwrite, char 
  *
  * Precondition: definitionToOverwrite is not NULL
  */
-void overwriteNodeDefinitionToPrimitive(environmentNode * definitionToOverwrite, char * identifier, PRIMITIVE_FUNCTION* primitive);
+void overwriteNodeDefinitionToPrimitive(environment_t * definitionToOverwrite, char * identifier, PRIMITIVE_FUNCTION* primitive);
 
 /**
  * Addes a new [identifier => AST] definition to the given environment
  * and returns a pointer to the new enviroment without modifying the old one.
  */
-environmentNode* define(const environmentNode* previousEnvironment, char* identifier, syntaxnode* ast);
+environment_t* define(const environment_t* previousEnvironment, char* identifier, AST_node_t* ast);
 
 /**
  * Addes a new [identifier => primitive] definition to the given environment
  * and returns a pointer to the new enviroment without modifying the old one.
  */
-environmentNode* definePrimitive(const environmentNode* previousEnvironment, char* identifier, PRIMITIVE_FUNCTION* primitive);
+environment_t* definePrimitive(const environment_t* previousEnvironment, char* identifier, PRIMITIVE_FUNCTION* primitive);
 /**
  * Removes the top-level definition, if present, and frees the memory that environmentNode* occupies.
  * Returns the resulting environment (what the given environment considered its parent).
@@ -95,4 +95,4 @@ environmentNode* definePrimitive(const environmentNode* previousEnvironment, cha
  * The data stored in the given environmentNode is not modified or freed. That control is 
  * the responsibility of the caller.
  */
-const environmentNode* freeTopDefinition(environmentNode* environmentToDestroy);
+const environment_t* freeTopDefinition(environment_t* environmentToDestroy);

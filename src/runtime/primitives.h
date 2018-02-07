@@ -93,8 +93,8 @@ PRIMITIVE_FUNCTION let;
  * Strings get a stringValue and carType _STRING
  * Identifiers get a carType _IDENTIFIER
  */
-void evaluateTokenType(syntaxnode* atomWithUnresolvedToken){
-	token t = *atomWithUnresolvedToken->atom;
+void evaluateTokenType(AST_node_t* atomWithUnresolvedToken){
+	token_t t = *atomWithUnresolvedToken->atom;
 	//free(atomWithUnresolvedToken->atom);
 	if(is_float(t.text)){
 		atomWithUnresolvedToken->carType = SYNTAX_CAR_TYPE_NUMBER;

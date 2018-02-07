@@ -15,5 +15,5 @@
 #define PARSE_ERROR_PROGRAM_NODE_REDUCED -6
 
 int buildParseTree(FILE *, struct parsenode *);
-int shouldReduce(struct parseStack, token *);
-// int isTokenInPredictSet(struct parsenode, token);
+int shouldReduce(struct parseStack, token_t *);
+// int isTokenInPredictSet(struct parsenode, token_t);

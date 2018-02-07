@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
 
 	//print these tokens to stdout as though it were a .jtoken file
 	while(hasNextToken(&stdinTokenizer)){
-		token * newToken = getNextToken(&stdinTokenizer);
+		token_t * newToken = getNextToken(&stdinTokenizer);
 		printToken(*newToken);
 	}
 	return 0;

@@ -2,13 +2,13 @@
 
 #include "primitives.h"
 
-syntaxnode* printListToStdout(environmentNode * environment, syntaxnode* listOfArguments){
+AST_node_t* printListToStdout(environment_t * environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
-	if(isEmptySyntaxNode(listOfArguments)){
+	if(isNil(listOfArguments)){
 		puts("print: contract violation\n\texpected at least one argument");
 	} else {
-		while(listOfArguments != NULL && !isEmptySyntaxNode(listOfArguments)){
-			printSyntaxnode(listOfArguments->car);
+		while(listOfArguments != NULL && !isNil(listOfArguments)){
+            printAST(listOfArguments->car);
 			putc('\n',stdout);
 			listOfArguments = _cdr(environment, listOfArguments);
 		}
@@ -16,11 +16,11 @@ syntaxnode* printListToStdout(environmentNode * environment, syntaxnode* listOfA
 	return NIL;
 }
 
-syntaxnode* car(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t* car(environment_t* environment, AST_node_t* listOfArguments){
 	return _car(environment, eval(environment, listOfArguments));
 }
 
-syntaxnode* _car(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t* _car(environment_t* environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
 	if(listOfArguments->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE){
 		return listOfArguments->car;
@@ -30,11 +30,11 @@ syntaxnode* _car(environmentNode* environment, syntaxnode* listOfArguments){
 	}
 }
 
-syntaxnode* cdr(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t* cdr(environment_t* environment, AST_node_t* listOfArguments){
 	return _cdr(environment, eval(environment,listOfArguments));
 }
 
-syntaxnode* _cdr(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t* _cdr(environment_t* environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
 	if(listOfArguments->cdr != NULL){
 		return listOfArguments->cdr;
@@ -45,20 +45,20 @@ syntaxnode* _cdr(environmentNode* environment, syntaxnode* listOfArguments){
 	}
 }
 
-syntaxnode* cons(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t* cons(environment_t* environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
 
-	syntaxnode* carNode = eval(environment, _car(environment, listOfArguments));
-	syntaxnode* cdrNode = _car(environment,_cdr(environment,listOfArguments));
+	AST_node_t* carNode = eval(environment, _car(environment, listOfArguments));
+	AST_node_t* cdrNode = _car(environment,_cdr(environment,listOfArguments));
 	if(cdrNode->carType != SYNTAX_CAR_TYPE_SYNTAX_NODE)
 		cdrNode = eval(environment, cdrNode);
 
-	return allocSyntaxnodeFromCons(carNode, cdrNode);
+	return allocASTNodeFromCons(carNode, cdrNode);
 }
 
-syntaxnode* quote(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t* quote(environment_t* environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
-	return allocSyntaxnodeFromCons(listOfArguments,NIL); //its one argument should be a list
+	return allocASTNodeFromCons(listOfArguments, NIL); //its one argument should be a list
 }
 
 /**
@@ -66,26 +66,26 @@ syntaxnode* quote(environmentNode* environment, syntaxnode* listOfArguments){
  * usage:
  * (let ((<key> <value>) ... ) <body>)
  **/
-syntaxnode* let(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t* let(environment_t* environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
-	environmentNode* newEnvironment = environment;
+	environment_t* newEnvironment = environment;
 	assert(listOfArguments->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE);
-	syntaxnode* definitions = _car(environment, listOfArguments);
-	while(definitions != NULL && !isEmptySyntaxNode(definitions)){
+	AST_node_t* definitions = _car(environment, listOfArguments);
+	while(definitions != NULL && !isNil(definitions)){
 		assert(definitions->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE);
-		syntaxnode* definition = _car(environment, definitions);
+		AST_node_t* definition = _car(environment, definitions);
 		definitions = _cdr(environment, definitions);
 		assert (definition->carType == SYNTAX_CAR_TYPE_SYNTAX_NODE);
-		syntaxnode* keyNode = _car(environment, definition);
+		AST_node_t* keyNode = _car(environment, definition);
 
 		assert(keyNode->carType == SYNTAX_CAR_TYPE_TOKEN);
-		token* key = keyNode->atom;
+		token_t* key = keyNode->atom;
 		assert(key->type == TYPE_TOKEN_ID);
 
 		newEnvironment = define(newEnvironment, key->text, _car(environment, _cdr(environment, definition)));
 	}
 
-	syntaxnode * out = eval(newEnvironment, _car(newEnvironment, _cdr(newEnvironment, listOfArguments)));
+	AST_node_t * out = eval(newEnvironment, _car(newEnvironment, _cdr(newEnvironment, listOfArguments)));
 
 	while(environment != newEnvironment){
 		newEnvironment = freeTopDefinition(newEnvironment);
@@ -95,38 +95,38 @@ syntaxnode* let(environmentNode* environment, syntaxnode* listOfArguments){
 }
 
 
-syntaxnode * plus(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t * plus(environment_t* environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
 	float sum = 0.0f;
-	while(listOfArguments != NULL && !isEmptySyntaxNode(listOfArguments)){
+	while(listOfArguments != NULL && !isNil(listOfArguments)){
 		// printListToStdout(environment, listOfArguments);
-		syntaxnode* addend = _car(environment, listOfArguments);
+		AST_node_t* addend = _car(environment, listOfArguments);
 		addend = eval(environment, addend); //get the number value of this addend
 		assert(addend->carType == SYNTAX_CAR_TYPE_NUMBER);
 		sum += addend->floatValue;
 		listOfArguments = _cdr(environment, listOfArguments);
 	}
-	syntaxnode* result = emptySyntaxnodeAlloc();
+	AST_node_t* result = emptySyntaxnodeAlloc();
 	result->carType = SYNTAX_CAR_TYPE_NUMBER;
 	result->floatValue = sum;
 	return result;
 }
 
-syntaxnode * minus(environmentNode* environment, syntaxnode* listOfArguments){
+AST_node_t * minus(environment_t* environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL);
 
-	syntaxnode* addend = _car(environment, listOfArguments);
+	AST_node_t* addend = _car(environment, listOfArguments);
 	addend = eval(environment, addend); //get the number value of this addend
 	assert(addend->carType == SYNTAX_CAR_TYPE_NUMBER);
 	
-	syntaxnode* subtends = _cdr(environment, listOfArguments);
+	AST_node_t* subtends = _cdr(environment, listOfArguments);
 
-	syntaxnode* result = emptySyntaxnodeAlloc();
+	AST_node_t* result = emptySyntaxnodeAlloc();
 	result->carType = SYNTAX_CAR_TYPE_NUMBER;
-	if(subtends == NULL || isEmptySyntaxNode(subtends)){
+	if(subtends == NULL || isNil(subtends)){
 		result->floatValue = -addend->floatValue;
 	} else {
-		syntaxnode* sumOfSubtends = plus(environment, subtends);
+		AST_node_t* sumOfSubtends = plus(environment, subtends);
 		result->floatValue = addend->floatValue - sumOfSubtends->floatValue;
 	}
 	return result;

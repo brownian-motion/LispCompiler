@@ -16,14 +16,14 @@ int main(int argc, char* argv[]){
 	#endif
 
 	//Second, generate a syntax tree from the given parse tree
-	syntaxnode syntaxtree;
+	AST_node_t syntaxtree;
 	if((errorcode = generateSyntaxTree(&program, &syntaxtree)) != 0){
 		puts("Error while generating syntax tree.");
 		return errorcode;
 	}
 	puts("\nSuccessful syntax tree generation!");
 	#ifdef DO_PRINT_RESULT_SYNTAX_TREE 
-		printSyntaxnode(&syntaxtree); 
+    printAST(&syntaxtree);
 	#endif
 
 	return errorcode;

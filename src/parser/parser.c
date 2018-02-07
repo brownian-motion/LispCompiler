@@ -17,7 +17,7 @@
 int buildParseTree(FILE * file, struct parsenode * output){
 	struct parseStack stack = makeParseStack();
 	tokenizer fileTokenizer = makeTokenizerFromFile(file); //stack allocated
-	token * lookAhead = getNextToken(&fileTokenizer); //never null, might represent EOF
+	token_t * lookAhead = getNextToken(&fileTokenizer); //never null, might represent EOF
 	int numIterations = 0;
 
 	while(isEmpty(stack) || peek(&stack).type != TYPE_PROGRAM){
@@ -36,7 +36,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 		int shouldReduceResult;
 		if(lookAhead->type == TYPE_TOKEN_ERROR){
 			if(DO_PRINT_PARSE_ERRORS)
-				printf("Parse error #%3d: Line #%3d, Col %3d: Invalid token encountered: \"%s\".\n", PARSE_ERROR_INVALID_TOKEN, lookAhead->lineNumber, lookAhead->colNumber, lookAhead->text);
+				printf("Parse error #%3d: Line #%3d, Col %3d: Invalid token_t encountered: \"%s\".\n", PARSE_ERROR_INVALID_TOKEN, lookAhead->lineNumber, lookAhead->colNumber, lookAhead->text);
 			return PARSE_ERROR_INVALID_TOKEN;
 		}
 		switch(shouldReduceResult = shouldReduce(stack, lookAhead)){
@@ -68,7 +68,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 							push(&stack, makeEFromAtom(atom));
 						} else {
 							if(DO_PRINT_PARSE_ERRORS){
-								fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Unexpected token %s.\n", PARSE_ERROR_SYNTAX_ERROR, atom.tokenPtr->lineNumber, atom.tokenPtr->colNumber, atom.tokenPtr->text);
+								fprintf(stderr, "Parse error #%3d: Line %3d, Col %3d: Unexpected token_t %s.\n", PARSE_ERROR_SYNTAX_ERROR, atom.tokenPtr->lineNumber, atom.tokenPtr->colNumber, atom.tokenPtr->text);
 							}
 							return PARSE_ERROR_SYNTAX_ERROR;
 						} 
@@ -111,7 +111,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
 						fprintf(stderr, "Parse error #%3d: Unexpected end of file.",PARSE_ERROR_EARLY_EOF);
 					return PARSE_ERROR_EARLY_EOF;
 				}
-				push(&stack,makeAtom(lookAhead)); //relinquishes control of the token to the atom
+				push(&stack,makeAtom(lookAhead)); //relinquishes control of the token_t to the atom
 				lookAhead = getNextToken(&fileTokenizer);
 				break;
 			default:
@@ -134,7 +134,7 @@ int buildParseTree(FILE * file, struct parsenode * output){
  * (without modifying the stack) if the parser should reduce the stack
  * without consuming more tokens.
  */
-int shouldReduce(struct parseStack stack, token * lookAhead){
+int shouldReduce(struct parseStack stack, token_t * lookAhead){
 	if(isEmpty(stack))
 		return 0;
 	switch(peek(&stack).type){
@@ -142,7 +142,7 @@ int shouldReduce(struct parseStack stack, token * lookAhead){
 			fputs("Somehow tried to check if the parser should reduce an entire program.",stderr);
 			return 0;
 		case TYPE_E:
-			//If the upcoming token is a right parentheses, we need to reduce by putting an empty Es onto the stack and doing nothing else
+			//If the upcoming token_t is a right parentheses, we need to reduce by putting an empty Es onto the stack and doing nothing else
 			//Otherwise, we need more tokens
 			return lookAhead->type == TYPE_TOKEN_RPAREN || lookAhead->type == TYPE_TOKEN_EOF;
 		case TYPE_ES:

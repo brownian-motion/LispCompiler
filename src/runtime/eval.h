@@ -5,10 +5,10 @@
 #include "../util/string_util.h"
 #include "environment.h"
 
-void convertTokenToFloat(syntaxnode* atomNode);
+void convertTokenToFloat(AST_node_t* atomNode);
 
-void convertTokenToPrimitive(syntaxnode* primitiveNode, PRIMITIVE_FUNCTION* primitive);
+void convertTokenToPrimitive(AST_node_t* primitiveNode, PRIMITIVE_FUNCTION* primitive);
 
-syntaxnode* lookupIdentifier(environmentNode* scope, syntaxnode* identifierNode);
+AST_node_t* lookupIdentifier(environment_t* scope, AST_node_t* identifierNode);
 
-syntaxnode* eval(environmentNode * enviroment, syntaxnode* listOfArguments);
+AST_node_t* eval(environment_t * enviroment, AST_node_t* listOfArguments);

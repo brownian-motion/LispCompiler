@@ -8,8 +8,8 @@
 #include "eval.c"
 #include "primitives.c"
 
-environmentNode* getDefaultEnvironment(){
-	environmentNode* initialEnvironment = NULL;
+environment_t* getDefaultEnvironment(){
+	environment_t* initialEnvironment = NULL;
 	initialEnvironment = define(initialEnvironment, "nil", NIL);
 	initialEnvironment = definePrimitive(initialEnvironment, "plus", &plus);
 	initialEnvironment = definePrimitive(initialEnvironment, "+", &plus);

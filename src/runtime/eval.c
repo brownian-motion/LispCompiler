@@ -1,31 +1,32 @@
 #pragma once
 
 #include "eval.h"
+#include "primitives.h"
 
-void convertTokenToFloat(syntaxnode* atomNode){
+void convertTokenToFloat(AST_node_t* atomNode){
 	assert(atomNode->carType == SYNTAX_CAR_TYPE_TOKEN
 		&& atomNode->atom->type == TYPE_TOKEN_NUMBER);
 	atomNode->carType = SYNTAX_CAR_TYPE_NUMBER;
 	char* floatText = atomNode->atom->text;
-	free(atomNode->atom); //no longer need this token, since we can safely replace it for all syntax nodes with its value
+	free(atomNode->atom); //no longer need this token_t, since we can safely replace it for all syntax nodes with its value
 	atomNode->floatValue = parseFloat(floatText);
 }
 
-void convertTokenToPrimitive(syntaxnode* primitiveNode, PRIMITIVE_FUNCTION* primitive){
+void convertTokenToPrimitive(AST_node_t* primitiveNode, PRIMITIVE_FUNCTION* primitive){
 	assert(primitiveNode->carType == SYNTAX_CAR_TYPE_TOKEN
 		&& primitiveNode->atom->type == TYPE_TOKEN_ID);
-	free(primitiveNode->atom); //no longer need this token, since we can safely replace it for all syntax nodes with its value
+	free(primitiveNode->atom); //no longer need this token_t, since we can safely replace it for all syntax nodes with its value
 	primitiveNode->carType = SYNTAX_CAR_TYPE_PRIMITIVE;
 	primitiveNode->primitive = primitive;
 }
 
-syntaxnode* lookupIdentifier(environmentNode* scope, syntaxnode* identifierNode){
+AST_node_t* lookupIdentifier(environment_t* scope, AST_node_t* identifierNode){
 	assert(identifierNode != NULL 
 		&& identifierNode->carType == SYNTAX_CAR_TYPE_TOKEN 
 		&& identifierNode->atom->type == TYPE_TOKEN_ID);
 	char* identifier = identifierNode->atom->text;
 	assert(isDefined(scope, identifier));
-	environmentNode* definition = findDefinitionForIdentifier(scope, identifier);
+	environment_t* definition = findDefinitionForIdentifier(scope, identifier);
 	switch(definition->nodeType){
 		case ENVIRONMENT_NODE_TYPE_AST:
 			return eval(scope, definition->ast);
@@ -38,7 +39,7 @@ syntaxnode* lookupIdentifier(environmentNode* scope, syntaxnode* identifierNode)
 	}
 }
 
-syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
+AST_node_t* eval(environment_t * environment, AST_node_t* listOfArguments){
 	assert(listOfArguments != NULL); //todo: return nil?
 	if(DO_PRINT_RUNTIME_TRACE){
 		fprintf(stderr, "Evaluating the following (%s): ",getSyntaxnodeCarTypeName(listOfArguments->carType));
@@ -61,7 +62,7 @@ syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 					return listOfArguments;
 				default:
 					if(DO_PRINT_RUNTIME_TRACE){
-						fprintf(stderr,"Encountered unexpected kind of token: %s %s\n", getTokenTypeName(listOfArguments->atom->type), listOfArguments->atom->text);
+						fprintf(stderr,"Encountered unexpected kind of token_t: %s %s\n", getTokenTypeName(listOfArguments->atom->type), listOfArguments->atom->text);
 					}
 					assert(0);
 					return NULL;
@@ -75,10 +76,10 @@ syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 			//this is a list. Try to evaluate it as evaluating a lambda or evaluating a primitive
 			if(DO_PRINT_RUNTIME_TRACE)
 				fprintf(stderr, "Evaluating what to apply to the list...\n");
-			syntaxnode* whatToApply = eval(environment, _car(environment, listOfArguments));
+			AST_node_t* whatToApply = eval(environment, _car(environment, listOfArguments));
 			if(DO_PRINT_RUNTIME_TRACE)
 				fprintf(stderr, "Evaluating the body of the list...\n");
-			syntaxnode* whatToApplyItTo = _cdr(environment, listOfArguments);
+			AST_node_t* whatToApplyItTo = _cdr(environment, listOfArguments);
 			switch(whatToApply->carType){
 				case SYNTAX_CAR_TYPE_PRIMITIVE:
 					if(DO_PRINT_RUNTIME_TRACE)
@@ -88,9 +89,9 @@ syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 					if(DO_PRINT_RUNTIME_TRACE){
 						fprintf(stderr,"Encountered unexpected kind of syntax node at front of list: %s\n", getSyntaxnodeCarTypeName(listOfArguments->carType));
 						fprintf(stderr, "Applying ");
-						fprintSyntaxnode(stderr,whatToApply);
+                        fprintAST(stderr, whatToApply);
 						fprintf(stderr, " to ");
-						fprintSyntaxnode(stderr,whatToApplyItTo);
+                        fprintAST(stderr, whatToApplyItTo);
 						putc('\n',stderr);
 					}
 					assert(0);
@@ -100,7 +101,7 @@ syntaxnode* eval(environmentNode * environment, syntaxnode* listOfArguments){
 			return NIL;
 		default:
 			fprintf(stderr,"Encountered unexpected kind of syntax node: %s\nNode: ", getSyntaxnodeCarTypeName(listOfArguments->carType));
-			fprintSyntaxnode(stderr,listOfArguments);
+            fprintAST(stderr, listOfArguments);
 			assert(0);
 			return NULL;
 	}

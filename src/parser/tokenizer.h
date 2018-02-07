@@ -6,7 +6,7 @@
 #include "../types/token.h"
 #define MEMORY_ALLOCATION_ERROR -2
 
-//TODO: add functions that read directly from a FILE* file buffer and return a single token
+//TODO: add functions that read directly from a FILE* file buffer and return a single token_t
 
 struct _tokenizer {
 	FILE * file;
@@ -27,7 +27,7 @@ typedef struct _tokenizer tokenizer;
 char * allocTokenBuffer(){
 	char *tokenBuffer = (char *) malloc(MAX_TOKEN_SIZE+1);
 	if(tokenBuffer == NULL){
-		fputs("Could not allocate heap memory for token buffer.", stderr);
+		fputs("Could not allocate heap memory for token_t buffer.", stderr);
 	}
 	return tokenBuffer;
 }
@@ -41,7 +41,7 @@ tokenizer makeTokenizerFromFile(FILE* f){
 		f,
 		1,				//start the line number at 1
 		0, 				//start the column number at 0 - it'll increment to 1 as soon as we read a character
-		tokenBuffer,	//assume the allocation of the token buffer went okay
+		tokenBuffer,	//assume the allocation of the token_t buffer went okay
 		0
 	  };
 	return out;
@@ -68,7 +68,7 @@ int hasNextToken(tokenizer * t);
  * and returns a pointer to it.
  * If there are no more tokens, or there was an error allocating a token, returns a tokenizer representing EOF.
  */
-token * getNextToken(tokenizer * t);
+token_t * getNextToken(tokenizer * t);
 
 char fPeekChar(FILE*);
 char fConsumeChar(FILE*);

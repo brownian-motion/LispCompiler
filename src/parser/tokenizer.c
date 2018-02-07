@@ -16,9 +16,9 @@ int hasNextToken(tokenizer * t){
 	return fPeekChar(t->file) != EOF;
 }
 
-token * getNextToken(tokenizer * t){
+token_t * getNextToken(tokenizer * t){
 	char c; //to hold the current character of interest
-	int colNumberAtStartOfToken = 0; //to keep track of the position where the token started
+	int colNumberAtStartOfToken = 0; //to keep track of the position where the token_t started
 	int state = STATE_EMPTY;
 
 	while( (c = fPeekChar(t->file)) != EOF){
@@ -30,7 +30,7 @@ token * getNextToken(tokenizer * t){
 					continue; // don't add to the buffer
 				} else if(is_digit(c)){
 					state = STATE_NUMBER;
-				} else if(c == '('){ // TODO: change to general brace token state
+				} else if(c == '('){ // TODO: change to general brace token_t state
 					state = STATE_LIST_START;
 				} else if(c == ')'){
 					state = STATE_LIST_END;
@@ -59,14 +59,14 @@ token * getNextToken(tokenizer * t){
 				}
 				break;
 			default:
-				fputs("Encountered an undefined state. Interpreting as an erroneous token.",stderr);
+				fputs("Encountered an undefined state. Interpreting as an erroneous token_t.",stderr);
 				state = STATE_ERROR;
 				//fall through to STATE_ERROR without waiting for the next loop because we encountered an error
 			case STATE_ERROR:
 				if(is_whitespace(c)){
 					addToTokenBuffer(t,'\0');
 					t->tokenBufferEnd = 0;
-					fprintf(stderr,"Erroneous token encountered: %s\n",t->tokenBuffer);
+					fprintf(stderr,"Erroneous token_t encountered: %s\n",t->tokenBuffer);
 					return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
 				} else {
 					addToTokenBuffer(t,c);
@@ -78,7 +78,7 @@ token * getNextToken(tokenizer * t){
 			case STATE_LIST_END: //The process is identical for both cases
 				//Expected to only be one char.
 				//This char would have already been added by the empty state,
-				//so just end the token here.
+				//so just end the token_t here.
 				addToTokenBuffer(t,'\0');
 				t->tokenBufferEnd = 0;
 				return allocAndInitializeToken(state, t->lineNumber, colNumberAtStartOfToken, t->tokenBuffer);
@@ -99,7 +99,7 @@ token * getNextToken(tokenizer * t){
 				break;
 		}
 	}
-	//Handle the final token when EOF is encountered
+	//Handle the final token_t when EOF is encountered
 	if(state != STATE_EMPTY && state != STATE_COMMENT){
 		addToTokenBuffer(t,'\0');
 		t->tokenBufferEnd = 0;

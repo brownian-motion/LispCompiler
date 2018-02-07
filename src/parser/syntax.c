@@ -3,7 +3,7 @@
 
 #define DO_PRINT_RESULT_SYNTAX_TREE 0
 
-int generateSyntaxTree(struct parsenode * parseTree, syntaxnode * syntaxTree){
+int generateSyntaxTree(struct parsenode * parseTree, AST_node_t * syntaxTree){
 	if(parseTree == NULL){
 		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
 		return -4;
@@ -18,7 +18,7 @@ int generateSyntaxTree(struct parsenode * parseTree, syntaxnode * syntaxTree){
 		return -1;
 	}
 	struct parsenode * e = &(parseTree->children[0]);
-	syntaxnode * root = makeSyntaxnodeFromE(e);
+	AST_node_t * root = makeSyntaxnodeFromE(e);
 	*syntaxTree = *root; //copy the data, not memory addresses
 	free(root); //because we copied the data into syntaxTree, we can free this memory space
 	return 0;
@@ -31,7 +31,7 @@ int generateSyntaxTree(struct parsenode * parseTree, syntaxnode * syntaxTree){
  *
  * This function returns a pointer to a heap-allocated syntaxnode, or NULL if that fails.
  */
-syntaxnode * makeSyntaxnodeFromEs(struct parsenode * node){
+AST_node_t * makeSyntaxnodeFromEs(struct parsenode * node){
 	if(node == NULL){
 		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
 		return NULL;
@@ -59,9 +59,9 @@ syntaxnode * makeSyntaxnodeFromEs(struct parsenode * node){
 				fprintf(stderr, "Expected an E but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
-			syntaxnode* out = emptySyntaxnodeAlloc();
-			syntaxnode* car = makeSyntaxnodeFromE(&e);
-			syntaxnode* cdr = makeSyntaxnodeFromEs(&es); //overwrites what was there?
+			AST_node_t* out = emptySyntaxnodeAlloc();
+			AST_node_t* car = makeSyntaxnodeFromE(&e);
+			AST_node_t* cdr = makeSyntaxnodeFromEs(&es); //overwrites what was there?
 			if(out == NULL){
 				fprintf(stderr,"Error generating first child of an ES");
 			}
@@ -76,7 +76,7 @@ syntaxnode * makeSyntaxnodeFromEs(struct parsenode * node){
 	}
 }
 
-syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
+AST_node_t * makeSyntaxnodeFromE(struct parsenode * node){
 	if(node == NULL){
 		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
 		return NULL;
@@ -111,9 +111,9 @@ syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
 				fprintf(stderr, "Expected an ES but encountered %s.", getNameOfParseNodeType(node->type));
 				return NULL;
 			}
-			syntaxnode* out = emptySyntaxnodeAlloc();
-			syntaxnode* car = makeSyntaxnodeFromE(&e);
-			syntaxnode* cdr = makeSyntaxnodeFromEs(&es);
+			AST_node_t* out = emptySyntaxnodeAlloc();
+			AST_node_t* car = makeSyntaxnodeFromE(&e);
+			AST_node_t* cdr = makeSyntaxnodeFromEs(&es);
 			out->carType = SYNTAX_CAR_TYPE_SYNTAX_NODE;
 			out->cdr = cdr;
 			out->car = car;
@@ -125,7 +125,7 @@ syntaxnode * makeSyntaxnodeFromE(struct parsenode * node){
 	}
 }
 
-syntaxnode * makeSyntaxnodeFromAtom(struct parsenode * node){
+AST_node_t * makeSyntaxnodeFromAtom(struct parsenode * node){
 	if(node == NULL){
 		fprintf(stderr, "Encountered a null parsenode while generating syntax tree.");
 		return NULL;
@@ -136,12 +136,12 @@ syntaxnode * makeSyntaxnodeFromAtom(struct parsenode * node){
 		fprintf(stderr, "Expected an ATOM but encountered %s.", getNameOfParseNodeType(node->type));
 		return NULL;
 	} else if(node->numChildren != 0){
-		fprintf(stderr, "Expected a parsenode with just a token, got one with %d children.",node->numChildren);
+		fprintf(stderr, "Expected a parsenode with just a token_t, got one with %d children.",node->numChildren);
 		return NULL;
 	} else if(node->tokenPtr == NULL){
-		fprintf(stderr, "Expected a parsenode with a token when creating an atom, got none.");
+		fprintf(stderr, "Expected a parsenode with a token_t when creating an atom, got none.");
 	}
-	syntaxnode * out = emptySyntaxnodeAlloc();
+	AST_node_t * out = emptySyntaxnodeAlloc();
 	out->atom = node->tokenPtr;
 	out->carType = SYNTAX_CAR_TYPE_TOKEN;
 	return out;
